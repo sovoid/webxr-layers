@@ -118,3 +118,6 @@ dist
 # Self-signed ssl certificates
 snowpack.crt
 snowpack.key
+
+# Snowpack build
+build/
