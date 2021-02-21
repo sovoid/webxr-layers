@@ -14,8 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
         case "/simple-equidirect-layer":
             app = new SimpleEquidirectMediaLayer();
             break;
-        default:
+        case "/simple-scene":
             app = new SimpleScene();
+            break;
+        default:
+            const indexContainer = document.querySelector(".container");
+            indexContainer.style.display = "";
     }
-    window.app = app;
+
+    if (app) {
+        window.app = app;
+    }
 });
