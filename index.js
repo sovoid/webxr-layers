@@ -5,8 +5,6 @@ import {
     MultipleLayers,
 } from "./apps";
 
-import video60fps from "./media/60fps.mp4";
-
 document.addEventListener("DOMContentLoaded", () => {
     let app;
 

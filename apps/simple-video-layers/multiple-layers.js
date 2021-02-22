@@ -7,7 +7,7 @@ import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 
 class App {
-    constructor(video_in = panoVideo) {
+    constructor(videoIn = panoVideo) {
         const container = document.createElement("div");
         document.body.appendChild(container);
 
@@ -25,7 +25,7 @@ class App {
         this.controls = this.createOrbitControls();
 
         // Create Video
-        this.video = this.createVideo(video_in);
+        this.video = this.createVideo(videoIn);
 
         this.setupVR();
 
