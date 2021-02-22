@@ -7,7 +7,7 @@ import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 
 class App {
-    constructor() {
+    constructor(videoIn = panoVideo) {
         const container = document.createElement("div");
         document.body.appendChild(container);
 
@@ -25,13 +25,45 @@ class App {
         this.controls = this.createOrbitControls();
 
         // Create Video
-        this.video = this.createVideo();
+        this.video = this.createVideo(videoIn);
 
         this.setupVR();
 
         // We need to bind `this` so that we can refer to the App object inside these methods
         window.addEventListener("resize", this.resize.bind(this));
         this.renderer.setAnimationLoop(this.render.bind(this));
+    }
+
+    /**
+     * Renders the scene on the renderer
+     */
+    render() {
+        const xr = this.renderer.xr;
+        const session = xr.getSession();
+
+        if (
+            session &&
+            session.renderState.layers &&
+            !session.hasMediaLayer &&
+            this.video.readyState
+        ) {
+            session.hasMediaLayer = true;
+            session.requestReferenceSpace("local").then((refSpace) => {
+                const mediaFactory = new XRMediaBinding(session);
+                const equirectLayer = mediaFactory.createEquirectLayer(
+                    this.video,
+                    {
+                        space: refSpace,
+                        layout: "stereo-top-bottom",
+                    }
+                );
+                session.updateRenderState({
+                    layers: [equirectLayer, session.renderState.layers[0]],
+                });
+                this.video.play();
+            });
+        }
+        this.renderer.render(this.scene, this.camera);
     }
 
     /**
@@ -137,53 +169,20 @@ class App {
     }
 
     /**
-     * Create's a three.js scene
+     * Creates a three.js scene
      */
     createScene() {
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color("#505050");
 
         return scene;
     }
 
-    createVideo() {
+    createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
-        video.src = panoVideo;
+        video.src = videoIn;
 
         return video;
-    }
-
-    /**
-     * Renders the scene on the renderer
-     */
-    render() {
-        const xr = this.renderer.xr;
-        const session = xr.getSession();
-
-        if (
-            session &&
-            session.renderState.layers &&
-            !session.hasMediaLayer &&
-            this.video.readyState
-        ) {
-            session.hasMediaLayer = true;
-            session.requestReferenceSpace("local").then((refSpace) => {
-                const mediaFactory = new XRMediaBinding(session);
-                const equirectLayer = mediaFactory.createEquirectLayer(
-                    this.video,
-                    {
-                        space: refSpace,
-                        layout: "stereo-top-bottom",
-                    }
-                );
-                session.updateRenderState({
-                    layers: [equirectLayer, session.renderState.layers[0]],
-                });
-                this.video.play();
-            });
-        }
-        this.renderer.render(this.scene, this.camera);
     }
 
     /**
@@ -204,12 +203,8 @@ class App {
         this.controllers = this.buildControllers();
 
         const vrButton = new VRButton(this.renderer, {
-            optionalFeatures: [
-                "local-floor",
-                "bounded-floor",
-                "hand-tracking",
-                "layers",
-            ],
+            requiredFeatures: ["layers"],
+            optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"],
         });
         document.body.appendChild(vrButton.domElement);
     }
