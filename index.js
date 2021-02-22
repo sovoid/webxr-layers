@@ -1,21 +1,27 @@
 import {
-    ControllerInterraction,
-    SimpleEquidirectMediaLayer,
+    ControllerInteraction,
     SimpleScene,
+    SimpleEquirectMediaLayer,
+    MultipleLayers,
 } from "./apps";
+
+import video60fps from "./media/60fps.mp4";
 
 document.addEventListener("DOMContentLoaded", () => {
     let app;
 
     switch (window.location.pathname) {
         case "/controller-interraction":
-            app = new ControllerInterraction();
-            break;
-        case "/simple-equidirect-layer":
-            app = new SimpleEquidirectMediaLayer();
+            app = new ControllerInteraction();
             break;
         case "/simple-scene":
             app = new SimpleScene();
+            break;
+        case "/simple-equirect-layer":
+            app = new SimpleEquirectMediaLayer();
+            break;
+        case "/multiple-layers":
+            app = new MultipleLayers();
             break;
         default:
             const indexContainer = document.querySelector(".container");
