@@ -27,6 +27,9 @@ class App {
         // Create Orbit Controls
         this.controls = this.createOrbitControls();
 
+        // Track which objects are hit
+        this.raycaster = new THREE.Raycaster();
+
         // Create Canvas UI
         this.ui = this.createUI();
         this.scene.add(this.ui.mesh);
@@ -87,11 +90,30 @@ class App {
 
         const ray = this.buildRay();
 
-        function onSelectStart() {
-            this.children[0].scale.z = 0;
-            this.userData.selectPressed = true;
+        function onSelectStart(event) {
+            // Play sound effect and ray effect
             const sound = new Audio(buttonClickSound);
             sound.play();
+            controller.children[0].scale.z = 0;
+
+            // If toolbar not in view, display it
+            if (!this.scene.children.includes(this.ui.mesh)) {
+                this.scene.add(this.ui.mesh);
+                return;
+            }
+
+            // Toolbar is in view, so handle button hits
+            const controller = event.target;
+            controller.userData.selectPressed = true;
+
+            // Make toolbar disappear if no interaction with toolbar
+            const intersections = this.getIntersections(controller);
+            if (
+                intersections.length < 1 &&
+                this.scene.children.includes(this.ui.mesh)
+            ) {
+                this.scene.remove(this.ui.mesh);
+            }
         }
 
         function onSelectEnd() {
@@ -105,7 +127,10 @@ class App {
             controller.userData.selectPressed = false;
             this.scene.add(controller);
 
-            controller.addEventListener("selectstart", onSelectStart);
+            controller.addEventListener(
+                "selectstart",
+                onSelectStart.bind(this)
+            );
             controller.addEventListener("selectend", onSelectEnd);
 
             controllers.push(controller);
@@ -135,6 +160,20 @@ class App {
         line.scale.z = 10;
 
         return line;
+    }
+
+    /**
+     * Gets an array of hits on the UI toolbar
+     * @param {*} controller controller to detect hits from
+     */
+    getIntersections(controller) {
+        const tempMatrix = new THREE.Matrix4();
+        tempMatrix.identity().extractRotation(controller.matrixWorld);
+
+        this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+        this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+        return this.raycaster.intersectObjects([this.ui.mesh]);
     }
 
     /**
@@ -190,6 +229,9 @@ class App {
         return scene;
     }
 
+    /**
+     * Creates a toolbar with playback controls
+     */
     createUI() {
         const onRestart = () => {
             this.video.currentTime = 0;
@@ -219,6 +261,7 @@ class App {
         const WHITE = "#fff";
         const LIGHT_BLUE = "#1bf";
         const LIGHTER_BLUE = "#3df";
+
         const config = {
             panelSize: { width: 2, height: 0.5 },
             opacity: 1,
@@ -276,6 +319,10 @@ class App {
         return ui;
     }
 
+    /**
+     * Creates an HTML video using `videoIn` as src attribute
+     * @param {} videoIn video.src
+     */
     createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
