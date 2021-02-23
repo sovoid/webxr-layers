@@ -2,9 +2,10 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
-import panoVideo from "../../media/pano.mp4";
-import { WebGLRenderer } from "../../util/WebGLRenderer";
-import { VRButton } from "../../util/webxr/VRButton";
+import panoVideo from "../media/pano.mp4";
+import { CanvasUI } from "../util/CanvasUI";
+import { WebGLRenderer } from "../util/WebGLRenderer";
+import { VRButton } from "../util/webxr/VRButton";
 
 class App {
     constructor(videoIn = panoVideo) {
@@ -24,6 +25,10 @@ class App {
         // Create Orbit Controls
         this.controls = this.createOrbitControls();
 
+        // Create Canvas UI
+        this.ui = this.createUI();
+        this.scene.add(this.ui.mesh);
+
         // Create Video
         this.video = this.createVideo(videoIn);
 
@@ -40,6 +45,10 @@ class App {
     render() {
         const xr = this.renderer.xr;
         const session = xr.getSession();
+
+        if (xr.isPresenting) {
+            this.ui.update();
+        }
 
         if (
             session &&
@@ -175,6 +184,86 @@ class App {
         const scene = new THREE.Scene();
 
         return scene;
+    }
+
+    createUI() {
+        const onRestart = () => {
+            this.video.currentTime = 0;
+        };
+
+        const onSkip = (val) => {
+            this.video.currentTime += val;
+        };
+
+        const onPlayPause = () => {
+            const paused = this.video.paused;
+            console.log(paused);
+
+            if (paused) {
+                this.video.play();
+            } else {
+                this.video.pause();
+            }
+
+            const label = paused ? ">" : "||";
+            this.ui.updateElement("pause", label);
+        };
+
+        const config = {
+            panelSize: { width: 2, height: 0.5 },
+            opacity: 1,
+            height: 128,
+            prev: {
+                type: "button",
+                position: { top: 32, left: 0 },
+                width: 64,
+                fontColor: "#bb0",
+                hover: "#ff0",
+                onSelect: () => onSkip(-5),
+            },
+            pause: {
+                type: "button",
+                position: { top: 35, left: 64 },
+                width: 128,
+                height: 52,
+                fontColor: "#ffffff",
+                backgroundColor: "#ff0000",
+                hover: "#ff0",
+                onSelect: onPlayPause,
+            },
+            next: {
+                type: "button",
+                position: { top: 32, left: 192 },
+                width: 64,
+                fontColor: "#bb0",
+                hover: "#ff0",
+                onSelect: () => onSkip(5),
+            },
+            restart: {
+                type: "button",
+                position: { top: 35, right: 10 },
+                width: 200,
+                height: 52,
+                fontColor: "#fff",
+                backgroundColor: "#1bf",
+                hover: "#3df",
+                onSelect: onRestart,
+            },
+            renderer: this.renderer,
+        };
+
+        const content = {
+            prev: "<path>M 10 32 L 54 10 L 54 54 Z</path>",
+            pause: "||",
+            next: "<path>M 54 32 L 10 10 L 10 54 Z</path>",
+            restart: "Restart",
+        };
+
+        const ui = new CanvasUI(content, config);
+        ui.mesh.position.set(0, -1, -3);
+        ui.mesh.rotateX(-Math.PI / 4);
+
+        return ui;
     }
 
     createVideo(videoIn) {

@@ -191,10 +191,10 @@ class App {
         return scene;
     }
 
-    createVideo(video_in) {
+    createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
-        video.src = video_in;
+        video.src = videoIn;
 
         return video;
     }
