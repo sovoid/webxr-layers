@@ -86,12 +86,12 @@ class App {
         const ray = this.buildRay();
 
         function onSelectStart() {
-            this.children[0].scale.z = 10;
+            this.children[0].scale.z = 0;
             this.userData.selectPressed = true;
         }
 
         function onSelectEnd() {
-            this.children[0].scale.z = 0;
+            this.children[0].scale.z = 10;
             this.userData.selectPressed = false;
         }
 
@@ -128,7 +128,7 @@ class App {
 
         const line = new THREE.Line(geometry);
         line.name = "line";
-        line.scale.z = 0;
+        line.scale.z = 10;
 
         return line;
     }
@@ -205,10 +205,16 @@ class App {
                 this.video.pause();
             }
 
-            const label = paused ? ">" : "||";
+            const label = paused ? "||" : "►";
             this.ui.updateElement("pause", label);
         };
 
+        const DARK_YELLOW = "#bb0";
+        const BRIGHT_YELLOW = "#ff0";
+        const RED = "#ff0000";
+        const WHITE = "#fff";
+        const LIGHT_BLUE = "#1bf";
+        const LIGHTER_BLUE = "#3df";
         const config = {
             panelSize: { width: 2, height: 0.5 },
             opacity: 1,
@@ -217,8 +223,8 @@ class App {
                 type: "button",
                 position: { top: 32, left: 0 },
                 width: 64,
-                fontColor: "#bb0",
-                hover: "#ff0",
+                fontColor: DARK_YELLOW,
+                hover: RED,
                 onSelect: () => onSkip(-5),
             },
             pause: {
@@ -226,17 +232,17 @@ class App {
                 position: { top: 35, left: 64 },
                 width: 128,
                 height: 52,
-                fontColor: "#ffffff",
-                backgroundColor: "#ff0000",
-                hover: "#ff0",
+                fontColor: WHITE,
+                backgroundColor: RED,
+                hover: BRIGHT_YELLOW,
                 onSelect: onPlayPause,
             },
             next: {
                 type: "button",
                 position: { top: 32, left: 192 },
                 width: 64,
-                fontColor: "#bb0",
-                hover: "#ff0",
+                fontColor: DARK_YELLOW,
+                hover: RED,
                 onSelect: () => onSkip(5),
             },
             restart: {
@@ -244,9 +250,9 @@ class App {
                 position: { top: 35, right: 10 },
                 width: 200,
                 height: 52,
-                fontColor: "#fff",
-                backgroundColor: "#1bf",
-                hover: "#3df",
+                fontColor: WHITE,
+                backgroundColor: LIGHT_BLUE,
+                hover: LIGHTER_BLUE,
                 onSelect: onRestart,
             },
             renderer: this.renderer,
