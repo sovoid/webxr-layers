@@ -291,7 +291,7 @@ class App {
 
         const vrButton = new VRButton(this.renderer, {
             requiredFeatures: ["layers"],
-            optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"],
+            optionalFeatures: ["local-floor", "bounded-floor"],
         });
         document.body.appendChild(vrButton.domElement);
     }
