@@ -3,6 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import panoVideo from "../media/pano.mp4";
+import buttonClickSound from "../media/audio/button-click.mp3";
 import { CanvasUI } from "../util/CanvasUI";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
@@ -25,9 +26,13 @@ class App {
         // Create Orbit Controls
         this.controls = this.createOrbitControls();
 
+        // Track which objects are hit
+        this.raycaster = new THREE.Raycaster();
+
         // Create Canvas UI
         this.ui = this.createUI();
-        this.scene.add(this.ui.mesh);
+        // Hide the toolbar initially
+        this.scene.userData.isToolbarVisible = false;
 
         // Create Video
         this.video = this.createVideo(videoIn);
@@ -45,6 +50,12 @@ class App {
     render() {
         const xr = this.renderer.xr;
         const session = xr.getSession();
+
+        if (this.controllers) {
+            for (const controller of this.controllers) {
+                this.handleToolbarIntersection(controller);
+            }
+        }
 
         if (xr.isPresenting) {
             this.ui.update();
@@ -86,6 +97,10 @@ class App {
         const ray = this.buildRay();
 
         function onSelectStart() {
+            // Play sound effect and ray effect
+            const sound = new Audio(buttonClickSound);
+            sound.play();
+
             this.userData.selectPressed = true;
         }
 
@@ -184,6 +199,9 @@ class App {
         return scene;
     }
 
+    /**
+     * Creates a toolbar with playback controls
+     */
     createUI() {
         const onRestart = () => {
             this.video.currentTime = 0;
@@ -203,8 +221,21 @@ class App {
                 this.video.pause();
             }
 
-            const label = paused ? ">" : "||";
+            const label = paused ? "||" : "►";
             this.ui.updateElement("pause", label);
+        };
+
+        const colors = {
+            blue: {
+                light: "#1bf",
+                lighter: "#3df",
+            },
+            red: "#f00",
+            white: "#fff",
+            yellow: {
+                bright: "#ff0",
+                dark: "#bb0",
+            },
         };
 
         const config = {
@@ -215,8 +246,8 @@ class App {
                 type: "button",
                 position: { top: 32, left: 0 },
                 width: 64,
-                fontColor: "#bb0",
-                hover: "#ff0",
+                fontColor: colors.yellow.dark,
+                hover: colors.yellow.bright,
                 onSelect: () => onSkip(-5),
             },
             pause: {
@@ -224,17 +255,17 @@ class App {
                 position: { top: 35, left: 64 },
                 width: 128,
                 height: 52,
-                fontColor: "#ffffff",
-                backgroundColor: "#ff0000",
-                hover: "#ff0",
+                fontColor: colors.white,
+                backgroundColor: colors.red,
+                hover: colors.yellow.bright,
                 onSelect: onPlayPause,
             },
             next: {
                 type: "button",
                 position: { top: 32, left: 192 },
                 width: 64,
-                fontColor: "#bb0",
-                hover: "#ff0",
+                fontColor: colors.yellow.dark,
+                hover: colors.yellow.bright,
                 onSelect: () => onSkip(5),
             },
             restart: {
@@ -242,9 +273,9 @@ class App {
                 position: { top: 35, right: 10 },
                 width: 200,
                 height: 52,
-                fontColor: "#fff",
-                backgroundColor: "#1bf",
-                hover: "#3df",
+                fontColor: colors.white,
+                backgroundColor: colors.blue.light,
+                hover: colors.blue.lighter,
                 onSelect: onRestart,
             },
             renderer: this.renderer,
@@ -264,12 +295,54 @@ class App {
         return ui;
     }
 
+    /**
+     * Creates an HTML video using `videoIn` as src attribute
+     * @param {} videoIn video.src
+     */
     createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
         video.src = videoIn;
 
         return video;
+    }
+
+    /**
+     * Gets an array of hits on the UI toolbar
+     * @param {*} controller controller to detect hits from
+     */
+    handleToolbarIntersection(controller) {
+        if (controller.userData.selectPressed) {
+            // If toolbar not in view, display it
+            if (!this.scene.userData.isToolbarVisible) {
+                this.scene.userData.isToolbarVisible = true;
+                this.scene.add(this.ui.mesh);
+                return;
+            }
+
+            // Make toolbar disappear if no interaction with toolbar
+            const worldMatrix = new THREE.Matrix4();
+            worldMatrix.identity().extractRotation(controller.matrixWorld);
+
+            this.raycaster.ray.origin.setFromMatrixPosition(
+                controller.matrixWorld
+            );
+            this.raycaster.ray.direction
+                .set(0, 0, -1)
+                .applyMatrix4(worldMatrix);
+
+            const intersections = this.raycaster.intersectObjects([
+                this.ui.mesh,
+            ]);
+
+            if (
+                intersections.length === 0 &&
+                this.scene.userData.isToolbarVisible
+            ) {
+                this.scene.userData.isToolbarVisible = false;
+                this.scene.remove(this.ui.mesh);
+            }
+        }
     }
 
     /**
@@ -288,10 +361,18 @@ class App {
         this.renderer.xr.enabled = true;
 
         this.controllers = this.buildControllers();
+        for (let controller of this.controllers) {
+            controller.addEventListener("connected", () => {
+                this.scene.add(this.ui.mesh);
+            });
+            controller.addEventListener("disconnected", () => {
+                this.scene.remove(this.ui.mesh);
+            });
+        }
 
         const vrButton = new VRButton(this.renderer, {
             requiredFeatures: ["layers"],
-            optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"],
+            optionalFeatures: ["local-floor", "bounded-floor"],
         });
         document.body.appendChild(vrButton.domElement);
     }
