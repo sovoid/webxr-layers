@@ -7,6 +7,8 @@ import { CanvasUI } from "../util/CanvasUI";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
 
+import buttonClickSound from "../media/audio/button-click.mp3";
+
 class App {
     constructor(videoIn = panoVideo) {
         const container = document.createElement("div");
@@ -88,6 +90,8 @@ class App {
         function onSelectStart() {
             this.children[0].scale.z = 0;
             this.userData.selectPressed = true;
+            const sound = new Audio(buttonClickSound);
+            sound.play();
         }
 
         function onSelectEnd() {
@@ -296,6 +300,14 @@ class App {
         this.renderer.xr.enabled = true;
 
         this.controllers = this.buildControllers();
+        for (let controller of this.controllers) {
+            controller.addEventListener("connected", () => {
+                this.scene.add(this.ui.mesh);
+            });
+            controller.addEventListener("disconnected", () => {
+                this.scene.remove(this.ui.mesh);
+            });
+        }
 
         const vrButton = new VRButton(this.renderer, {
             requiredFeatures: ["layers"],
