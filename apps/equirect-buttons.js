@@ -3,11 +3,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import panoVideo from "../media/pano.mp4";
+import buttonClickSound from "../media/audio/button-click.mp3";
 import { CanvasUI } from "../util/CanvasUI";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
-
-import buttonClickSound from "../media/audio/button-click.mp3";
 
 class App {
     constructor(videoIn = panoVideo) {
@@ -32,7 +31,8 @@ class App {
 
         // Create Canvas UI
         this.ui = this.createUI();
-        this.scene.add(this.ui.mesh);
+        // Hide the toolbar initially
+        this.scene.userData.isToolbarVisible = false;
 
         // Create Video
         this.video = this.createVideo(videoIn);
@@ -50,6 +50,12 @@ class App {
     render() {
         const xr = this.renderer.xr;
         const session = xr.getSession();
+
+        if (this.controllers) {
+            for (const controller of this.controllers) {
+                this.handleToolbarIntersection(controller);
+            }
+        }
 
         if (xr.isPresenting) {
             this.ui.update();
@@ -90,34 +96,15 @@ class App {
 
         const ray = this.buildRay();
 
-        function onSelectStart(event) {
+        function onSelectStart() {
             // Play sound effect and ray effect
             const sound = new Audio(buttonClickSound);
             sound.play();
-            controller.children[0].scale.z = 0;
 
-            // If toolbar not in view, display it
-            if (!this.scene.children.includes(this.ui.mesh)) {
-                this.scene.add(this.ui.mesh);
-                return;
-            }
-
-            // Toolbar is in view, so handle button hits
-            const controller = event.target;
-            controller.userData.selectPressed = true;
-
-            // Make toolbar disappear if no interaction with toolbar
-            const intersections = this.getIntersections(controller);
-            if (
-                intersections.length < 1 &&
-                this.scene.children.includes(this.ui.mesh)
-            ) {
-                this.scene.remove(this.ui.mesh);
-            }
+            this.userData.selectPressed = true;
         }
 
         function onSelectEnd() {
-            this.children[0].scale.z = 10;
             this.userData.selectPressed = false;
         }
 
@@ -127,10 +114,7 @@ class App {
             controller.userData.selectPressed = false;
             this.scene.add(controller);
 
-            controller.addEventListener(
-                "selectstart",
-                onSelectStart.bind(this)
-            );
+            controller.addEventListener("selectstart", onSelectStart);
             controller.addEventListener("selectend", onSelectEnd);
 
             controllers.push(controller);
@@ -160,20 +144,6 @@ class App {
         line.scale.z = 10;
 
         return line;
-    }
-
-    /**
-     * Gets an array of hits on the UI toolbar
-     * @param {*} controller controller to detect hits from
-     */
-    getIntersections(controller) {
-        const tempMatrix = new THREE.Matrix4();
-        tempMatrix.identity().extractRotation(controller.matrixWorld);
-
-        this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-        this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-
-        return this.raycaster.intersectObjects([this.ui.mesh]);
     }
 
     /**
@@ -255,12 +225,18 @@ class App {
             this.ui.updateElement("pause", label);
         };
 
-        const DARK_YELLOW = "#bb0";
-        const BRIGHT_YELLOW = "#ff0";
-        const RED = "#ff0000";
-        const WHITE = "#fff";
-        const LIGHT_BLUE = "#1bf";
-        const LIGHTER_BLUE = "#3df";
+        const colors = {
+            blue: {
+                light: "#1bf",
+                lighter: "#3df",
+            },
+            red: "#f00",
+            white: "#fff",
+            yellow: {
+                bright: "#ff0",
+                dark: "#bb0",
+            },
+        };
 
         const config = {
             panelSize: { width: 2, height: 0.5 },
@@ -270,8 +246,8 @@ class App {
                 type: "button",
                 position: { top: 32, left: 0 },
                 width: 64,
-                fontColor: DARK_YELLOW,
-                hover: RED,
+                fontColor: colors.yellow.dark,
+                hover: colors.yellow.bright,
                 onSelect: () => onSkip(-5),
             },
             pause: {
@@ -279,17 +255,17 @@ class App {
                 position: { top: 35, left: 64 },
                 width: 128,
                 height: 52,
-                fontColor: WHITE,
-                backgroundColor: RED,
-                hover: BRIGHT_YELLOW,
+                fontColor: colors.white,
+                backgroundColor: colors.red,
+                hover: colors.yellow.bright,
                 onSelect: onPlayPause,
             },
             next: {
                 type: "button",
                 position: { top: 32, left: 192 },
                 width: 64,
-                fontColor: DARK_YELLOW,
-                hover: RED,
+                fontColor: colors.yellow.dark,
+                hover: colors.yellow.bright,
                 onSelect: () => onSkip(5),
             },
             restart: {
@@ -297,9 +273,9 @@ class App {
                 position: { top: 35, right: 10 },
                 width: 200,
                 height: 52,
-                fontColor: WHITE,
-                backgroundColor: LIGHT_BLUE,
-                hover: LIGHTER_BLUE,
+                fontColor: colors.white,
+                backgroundColor: colors.blue.light,
+                hover: colors.blue.lighter,
                 onSelect: onRestart,
             },
             renderer: this.renderer,
@@ -329,6 +305,44 @@ class App {
         video.src = videoIn;
 
         return video;
+    }
+
+    /**
+     * Gets an array of hits on the UI toolbar
+     * @param {*} controller controller to detect hits from
+     */
+    handleToolbarIntersection(controller) {
+        if (controller.userData.selectPressed) {
+            // If toolbar not in view, display it
+            if (!this.scene.userData.isToolbarVisible) {
+                this.scene.userData.isToolbarVisible = true;
+                this.scene.add(this.ui.mesh);
+                return;
+            }
+
+            // Make toolbar disappear if no interaction with toolbar
+            const worldMatrix = new THREE.Matrix4();
+            worldMatrix.identity().extractRotation(controller.matrixWorld);
+
+            this.raycaster.ray.origin.setFromMatrixPosition(
+                controller.matrixWorld
+            );
+            this.raycaster.ray.direction
+                .set(0, 0, -1)
+                .applyMatrix4(worldMatrix);
+
+            const intersections = this.raycaster.intersectObjects([
+                this.ui.mesh,
+            ]);
+
+            if (
+                intersections.length === 0 &&
+                this.scene.userData.isToolbarVisible
+            ) {
+                this.scene.userData.isToolbarVisible = false;
+                this.scene.remove(this.ui.mesh);
+            }
+        }
     }
 
     /**
