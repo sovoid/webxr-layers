@@ -77,12 +77,10 @@ class App {
         const ray = this.buildRay();
 
         function onSelectStart() {
-            this.children[0].scale.z = 10;
             this.userData.selectPressed = true;
         }
 
         function onSelectEnd() {
-            this.children[0].scale.z = 0;
             this.userData.selectPressed = false;
         }
 
@@ -119,7 +117,7 @@ class App {
 
         const line = new THREE.Line(geometry);
         line.name = "line";
-        line.scale.z = 0;
+        line.scale.z = 10;
 
         return line;
     }
