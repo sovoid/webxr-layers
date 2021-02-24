@@ -90,7 +90,7 @@ class App {
 
         const ray = this.buildRay();
 
-        onSelectStart = (event) => {
+        const onSelectStart = (event) => {
             // Ftech the controller
             const controller = event.target;
 
@@ -348,9 +348,6 @@ class App {
 
         this.controllers = this.buildControllers();
         for (let controller of this.controllers) {
-            controller.addEventListener("connected", () => {
-                this.scene.add(this.ui.mesh);
-            });
             controller.addEventListener("disconnected", () => {
                 this.scene.remove(this.ui.mesh);
             });
