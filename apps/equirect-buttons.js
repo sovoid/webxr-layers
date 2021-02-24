@@ -51,12 +51,6 @@ class App {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
-        if (this.controllers) {
-            for (const controller of this.controllers) {
-                this.handleToolbarIntersection(controller);
-            }
-        }
-
         if (xr.isPresenting) {
             this.ui.update();
         }
@@ -96,17 +90,16 @@ class App {
 
         const ray = this.buildRay();
 
-        function onSelectStart() {
+        onSelectStart = (event) => {
+            // Ftech the controller
+            const controller = event.target;
+
             // Play sound effect and ray effect
             const sound = new Audio(buttonClickSound);
             sound.play();
 
-            this.userData.selectPressed = true;
-        }
-
-        function onSelectEnd() {
-            this.userData.selectPressed = false;
-        }
+            this.handleToolbarIntersection(controller);
+        };
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
@@ -115,7 +108,6 @@ class App {
             this.scene.add(controller);
 
             controller.addEventListener("selectstart", onSelectStart);
-            controller.addEventListener("selectend", onSelectEnd);
 
             controllers.push(controller);
 
@@ -312,14 +304,11 @@ class App {
      * @param {*} controller controller to detect hits from
      */
     handleToolbarIntersection(controller) {
-        if (controller.userData.selectPressed) {
-            // If toolbar not in view, display it
-            if (!this.scene.userData.isToolbarVisible) {
-                this.scene.userData.isToolbarVisible = true;
-                this.scene.add(this.ui.mesh);
-                return;
-            }
-
+        // If toolbar not in view, display it
+        if (!this.scene.userData.isToolbarVisible) {
+            this.scene.userData.isToolbarVisible = true;
+            this.scene.add(this.ui.mesh);
+        } else {
             // Make toolbar disappear if no interaction with toolbar
             const worldMatrix = new THREE.Matrix4();
             worldMatrix.identity().extractRotation(controller.matrixWorld);
@@ -335,10 +324,7 @@ class App {
                 this.ui.mesh,
             ]);
 
-            if (
-                intersections.length === 0 &&
-                this.scene.userData.isToolbarVisible
-            ) {
+            if (intersections.length === 0) {
                 this.scene.userData.isToolbarVisible = false;
                 this.scene.remove(this.ui.mesh);
             }
