@@ -3,11 +3,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import panoVideo from "../media/pano.mp4";
+import buttonClickSound from "../media/audio/button-click.mp3";
 import { CanvasUI } from "../util/CanvasUI";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
-
-import buttonClickSound from "../media/audio/button-click.mp3";
 
 class App {
     constructor(videoIn = panoVideo) {
@@ -91,6 +90,7 @@ class App {
         const ray = this.buildRay();
 
         function onSelectStart(event) {
+            const controller = event.target;
             // Play sound effect and ray effect
             const sound = new Audio(buttonClickSound);
             sound.play();
@@ -103,7 +103,6 @@ class App {
             }
 
             // Toolbar is in view, so handle button hits
-            const controller = event.target;
             controller.userData.selectPressed = true;
 
             // Make toolbar disappear if no interaction with toolbar
