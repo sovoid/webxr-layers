@@ -7,7 +7,6 @@ import buttonClickSound from "../media/audio/button-click.mp3";
 import { CanvasUI } from "../util/CanvasUI";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
-import { Group } from "three";
 
 class App {
     constructor(videoIn = panoVideo) {
@@ -30,12 +29,13 @@ class App {
         // Track which objects are hit
         this.raycaster = new THREE.Raycaster();
 
-        const toolbarGroup = new THREE.Group();
         // Create Canvas UI
         this.ui = this.createUI();
-        toolbarGroup.add(this.ui.mesh);
         this.progressBar = this.createProgressBar();
-        toolbarGroup.add(this.progressBar);
+
+        this.toolbarGroup = new THREE.Group();
+        this.toolbarGroup.add(this.ui.mesh);
+        this.toolbarGroup.add(this.progressBar);
 
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
@@ -56,12 +56,6 @@ class App {
     render() {
         const xr = this.renderer.xr;
         const session = xr.getSession();
-
-        if (this.controllers) {
-            for (const controller of this.controllers) {
-                this.handleToolbarIntersection(controller);
-            }
-        }
 
         if (xr.isPresenting) {
             this.ui.update();
@@ -102,17 +96,16 @@ class App {
 
         const ray = this.buildRay();
 
-        function onSelectStart() {
+        const onSelectStart = (event) => {
+            // Ftech the controller
+            const controller = event.target;
+
             // Play sound effect and ray effect
             const sound = new Audio(buttonClickSound);
             sound.play();
 
-            this.userData.selectPressed = true;
-        }
-
-        function onSelectEnd() {
-            this.userData.selectPressed = false;
-        }
+            this.handleToolbarIntersection(controller);
+        };
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
@@ -121,7 +114,6 @@ class App {
             this.scene.add(controller);
 
             controller.addEventListener("selectstart", onSelectStart);
-            controller.addEventListener("selectend", onSelectEnd);
 
             controllers.push(controller);
 
@@ -325,15 +317,11 @@ class App {
      * @param {*} controller controller to detect hits from
      */
     handleToolbarIntersection(controller) {
-        if (controller.userData.selectPressed) {
-            // If toolbar not in view, display it
-            if (!this.scene.userData.isToolbarVisible) {
-                this.scene.userData.isToolbarVisible = true;
-                this.scene.add(this.ui.mesh);
-                return;
-            } else {
-            }
-
+        // If toolbar not in view, display it
+        if (!this.scene.userData.isToolbarVisible) {
+            this.scene.userData.isToolbarVisible = true;
+            this.scene.add(this.toolbarGroup);
+        } else {
             // Make toolbar disappear if no interaction with toolbar
             const worldMatrix = new THREE.Matrix4();
             worldMatrix.identity().extractRotation(controller.matrixWorld);
@@ -346,15 +334,12 @@ class App {
                 .applyMatrix4(worldMatrix);
 
             const intersections = this.raycaster.intersectObjects([
-                this.ui.mesh,
+                this.toolbarGroup,
             ]);
 
-            if (
-                intersections.length === 0 &&
-                this.scene.userData.isToolbarVisible
-            ) {
+            if (intersections.length === 0) {
                 this.scene.userData.isToolbarVisible = false;
-                this.scene.remove(this.ui.mesh);
+                this.scene.remove(this.toolbarGroup);
             }
         }
     }
@@ -377,7 +362,7 @@ class App {
         this.controllers = this.buildControllers();
         for (let controller of this.controllers) {
             controller.addEventListener("disconnected", () => {
-                this.scene.remove(this.ui.mesh);
+                this.scene.remove(this.toolbarGroup);
             });
         }
 
