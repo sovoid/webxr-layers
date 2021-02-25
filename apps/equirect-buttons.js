@@ -31,11 +31,12 @@ class App {
 
         // Create Canvas UI
         this.ui = this.createUI();
+
+        // Create Progress Bar
         this.progressBar = this.createProgressBar();
 
-        this.toolbarGroup = new THREE.Group();
-        this.toolbarGroup.add(this.ui.mesh);
-        this.toolbarGroup.add(this.progressBar);
+        // Create Toolbar Group
+        this.toolbarGroup = this.createToolbarGroup();
 
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
@@ -59,6 +60,10 @@ class App {
 
         if (xr.isPresenting) {
             this.ui.update();
+        }
+
+        if (this.video) {
+            this.updateProgressBar();
         }
 
         if (
@@ -288,16 +293,38 @@ class App {
 
         const ui = new CanvasUI(content, config);
         ui.mesh.position.set(0, -1, -3);
-        ui.mesh.rotateX(-Math.PI / 4);
 
         return ui;
     }
 
     createProgressBar() {
-        const barGeometry = new THREE.PlaneGeometry(2, 0.01);
-        const barMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const barGeometry = new THREE.PlaneGeometry(1, 0.1);
+        const barMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const barMesh = new THREE.Mesh(barGeometry, barMaterial);
+
+        const { x, y, z } = this.ui.mesh.position;
+        barMesh.position.set(x, y + 0.3, z);
+
         return barMesh;
+    }
+
+    updateProgressBar() {
+        const progress = (this.video.currentTime / this.video.duration) * 2;
+        this.progressBar.scale.set(progress, 1, 1);
+        const offset = (2 - progress) / 2;
+        this.progressBar.position.x = -offset;
+        this.progressBar.position.needsUpdate = true;
+    }
+
+    createToolbarGroup() {
+        const toolbarGroup = new THREE.Group();
+        toolbarGroup.add(this.ui.mesh);
+        toolbarGroup.add(this.progressBar);
+
+        toolbarGroup.position.set(0, 1.6, -2);
+        toolbarGroup.rotateX(-Math.PI / 4);
+
+        return toolbarGroup;
     }
 
     /**
@@ -308,6 +335,10 @@ class App {
         const video = document.createElement("video");
         video.loop = true;
         video.src = videoIn;
+
+        video.onloadedmetadata = () => {
+            console.log("video metadata loaded");
+        };
 
         return video;
     }
@@ -334,7 +365,7 @@ class App {
                 .applyMatrix4(worldMatrix);
 
             const intersections = this.raycaster.intersectObjects([
-                this.toolbarGroup,
+                this.ui.mesh,
             ]);
 
             if (intersections.length === 0) {
