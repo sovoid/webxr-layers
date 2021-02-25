@@ -7,6 +7,7 @@ import buttonClickSound from "../media/audio/button-click.mp3";
 import { CanvasUI } from "../util/CanvasUI";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
+import { Group } from "three";
 
 class App {
     constructor(videoIn = panoVideo) {
@@ -29,8 +30,13 @@ class App {
         // Track which objects are hit
         this.raycaster = new THREE.Raycaster();
 
+        const toolbarGroup = new THREE.Group();
         // Create Canvas UI
         this.ui = this.createUI();
+        toolbarGroup.add(this.ui.mesh);
+        this.progressBar = this.createProgressBar();
+        toolbarGroup.add(this.progressBar);
+
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
 
@@ -295,6 +301,13 @@ class App {
         return ui;
     }
 
+    createProgressBar() {
+        const barGeometry = new THREE.PlaneGeometry(2, 0.01);
+        const barMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const barMesh = new THREE.Mesh(barGeometry, barMaterial);
+        return barMesh;
+    }
+
     /**
      * Creates an HTML video using `videoIn` as src attribute
      * @param {} videoIn video.src
@@ -318,6 +331,7 @@ class App {
                 this.scene.userData.isToolbarVisible = true;
                 this.scene.add(this.ui.mesh);
                 return;
+            } else {
             }
 
             // Make toolbar disappear if no interaction with toolbar
@@ -362,9 +376,6 @@ class App {
 
         this.controllers = this.buildControllers();
         for (let controller of this.controllers) {
-            controller.addEventListener("connected", () => {
-                this.scene.add(this.ui.mesh);
-            });
             controller.addEventListener("disconnected", () => {
                 this.scene.remove(this.ui.mesh);
             });
