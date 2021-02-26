@@ -300,7 +300,7 @@ class App {
     createProgressBar() {
         const barGroup = new THREE.Group();
 
-        const bgBarGeometry = new THREE.PlaneGeometry(2, 0.1);
+        const bgBarGeometry = new THREE.PlaneGeometry(1, 0.1);
         const bgBarMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const bgBarMesh = new THREE.Mesh(bgBarGeometry, bgBarMaterial);
 
@@ -322,14 +322,23 @@ class App {
         const redProgressBar = this.progressBar.getObjectByName(
             "red progress bar"
         );
+        const whiteProgressBar = this.progressBar.getObjectByName(
+            "white progress bar"
+        );
+
         const progress = (this.video.currentTime / this.video.duration) * 2;
         redProgressBar.scale.set(progress, 1, 1);
-        const offset = (2 - progress) / 2;
-        redProgressBar.position.x = -offset;
+        const redOffset = (2 - progress) / 2;
+        redProgressBar.position.x = -redOffset;
         redProgressBar.position.needsUpdate = true;
+
+        whiteProgressBar.scale.set(2 - progress, 1, 1);
+        const whiteOffset = progress / 2;
+        whiteProgressBar.position.x = whiteOffset;
+        whiteProgressBar.position.needsUpdate = true;
     }
 
-    setVideoTime(xPosition) {
+    setVideoCurrentTime(xPosition) {
         // Set video playback position
         const timeFraction = (xPosition + 1) / 2;
         this.video.currentTime = timeFraction * this.video.duration;
@@ -393,20 +402,13 @@ class App {
                 this.scene.remove(this.toolbarGroup);
             }
 
-            // console.log(intersections);
-
-            const redProgressBar = this.progressBar.getObjectByName(
-                "red progress bar"
+            const intersectionWithProgressBar = intersections.find(
+                ({ object: { name } }) =>
+                    name === "white progress bar" || name === "red progress bar"
             );
-            const whiteProgressBar = this.progressBar.getObjectByName(
-                "white progress bar"
-            );
-            const intersectionWithWhiteBar = intersections.find(
-                ({ object: { name } }) => name === "white progress bar"
-            );
-            if (intersectionWithWhiteBar) {
-                redProgressBar.position.x = intersectionWithWhiteBar.point.x;
-                this.setVideoTime(intersectionWithWhiteBar.point.x);
+            if (intersectionWithProgressBar) {
+                this.setVideoCurrentTime(intersectionWithProgressBar.point.x);
+                this.updateProgressBar();
             }
         }
     }
