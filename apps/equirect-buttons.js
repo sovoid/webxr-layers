@@ -298,22 +298,41 @@ class App {
     }
 
     createProgressBar() {
+        const barGroup = new THREE.Group();
+
+        const bgBarGeometry = new THREE.PlaneGeometry(2, 0.1);
+        const bgBarMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const bgBarMesh = new THREE.Mesh(bgBarGeometry, bgBarMaterial);
+
         const barGeometry = new THREE.PlaneGeometry(1, 0.1);
-        const barMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const barMaterial = new THREE.MeshBasicMaterial({ color: 0xff031b });
         const barMesh = new THREE.Mesh(barGeometry, barMaterial);
 
         const { x, y, z } = this.ui.mesh.position;
-        barMesh.position.set(x, y + 0.3, z);
+        barMesh.name = "red progress bar";
+        barGroup.add(barMesh);
+        bgBarMesh.name = "white progress bar";
+        barGroup.add(bgBarMesh);
+        barGroup.position.set(x, y + 0.3, z);
 
-        return barMesh;
+        return barGroup;
     }
 
     updateProgressBar() {
+        const redProgressBar = this.progressBar.getObjectByName(
+            "red progress bar"
+        );
         const progress = (this.video.currentTime / this.video.duration) * 2;
-        this.progressBar.scale.set(progress, 1, 1);
+        redProgressBar.scale.set(progress, 1, 1);
         const offset = (2 - progress) / 2;
-        this.progressBar.position.x = -offset;
-        this.progressBar.position.needsUpdate = true;
+        redProgressBar.position.x = -offset;
+        redProgressBar.position.needsUpdate = true;
+    }
+
+    setVideoTime(xPosition) {
+        // Set video playback position
+        const timeFraction = (xPosition + 1) / 2;
+        this.video.currentTime = timeFraction * this.video.duration;
     }
 
     createToolbarGroup() {
@@ -337,7 +356,7 @@ class App {
         video.src = videoIn;
 
         video.onloadedmetadata = () => {
-            console.log("video metadata loaded");
+            console.log("Video loaded");
         };
 
         return video;
@@ -366,11 +385,28 @@ class App {
 
             const intersections = this.raycaster.intersectObjects([
                 this.ui.mesh,
+                ...this.progressBar.children,
             ]);
 
             if (intersections.length === 0) {
                 this.scene.userData.isToolbarVisible = false;
                 this.scene.remove(this.toolbarGroup);
+            }
+
+            // console.log(intersections);
+
+            const redProgressBar = this.progressBar.getObjectByName(
+                "red progress bar"
+            );
+            const whiteProgressBar = this.progressBar.getObjectByName(
+                "white progress bar"
+            );
+            const intersectionWithWhiteBar = intersections.find(
+                ({ object: { name } }) => name === "white progress bar"
+            );
+            if (intersectionWithWhiteBar) {
+                redProgressBar.position.x = intersectionWithWhiteBar.point.x;
+                this.setVideoTime(intersectionWithWhiteBar.point.x);
             }
         }
     }
