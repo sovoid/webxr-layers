@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import { CanvasUI } from "./CanvasUI";
+import { CanvasUI } from "../../util/CanvasUI";
 
 class Toolbar {
     constructor(renderer, videoIn, isAngled) {
@@ -16,7 +16,7 @@ class Toolbar {
 
         // Toolbar Group
         // prettier-ignore
-        this._toolbarGroup = this.createToolbarGroup(isAngled, {x: 3, y: 3, z: -2});
+        this._toolbarGroup = this.createToolbarGroup(isAngled, {x: 0, y: 1.6, z: -2});
     }
 
     get objects() {
