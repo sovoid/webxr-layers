@@ -4,9 +4,9 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 
 import panoVideo from "../media/pano.mp4";
 import buttonClickSound from "../media/audio/button-click.mp3";
+import Toolbar from "../util/Toolbar";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
-import Toolbar from "../util/Toolbar";
 
 class App {
     constructor(videoIn = panoVideo) {
@@ -33,9 +33,8 @@ class App {
         this.raycaster = new THREE.Raycaster();
 
         // Create Toolbar Group
-        // prettier-ignore
-        this.toolbar = new Toolbar(this.renderer, this.video, true);
-        this.toolbarGroup = this.toolbar.toolbar;
+        this.toolbar = this.createToolbar();
+        this.toolbarGroup = this.toolbar.toolbarGroup;
 
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
@@ -198,6 +197,11 @@ class App {
         return scene;
     }
 
+    createToolbar() {
+        const toolbar = new Toolbar(this.renderer, this.video, true);
+        return toolbar;
+    }
+
     /**
      * Creates an HTML video using `videoIn` as src attribute
      * @param {} videoIn video.src
@@ -242,9 +246,10 @@ class App {
             if (intersections.length === 0) {
                 this.scene.userData.isToolbarVisible = false;
                 this.scene.remove(this.toolbarGroup);
+            } else {
+                // Handle the intersection with Toolbar
+                this.toolbar.update(intersections);
             }
-
-            this.toolbar.update(intersections);
         }
     }
 
