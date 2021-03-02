@@ -4,7 +4,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 
 import panoVideo from "../media/pano.mp4";
 import buttonClickSound from "../media/audio/button-click.mp3";
-import { CanvasUI } from "../util/CanvasUI";
+import Toolbar from "../util/Toolbar";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
 
@@ -26,16 +26,18 @@ class App {
         // Create Orbit Controls
         this.controls = this.createOrbitControls();
 
+        // Create Video
+        this.video = this.createVideo(videoIn);
+
         // Track which objects are hit
         this.raycaster = new THREE.Raycaster();
 
-        // Create Canvas UI
-        this.ui = this.createUI();
+        // Create Toolbar Group
+        this.toolbar = this.createToolbar();
+        this.toolbarGroup = this.toolbar.toolbarGroup;
+
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
-
-        // Create Video
-        this.video = this.createVideo(videoIn);
 
         this.setupVR();
 
@@ -51,8 +53,12 @@ class App {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
-        if (xr.isPresenting) {
-            this.ui.update();
+        if (xr.isPresenting && this.toolbarGroup) {
+            this.toolbar.updateUI();
+        }
+
+        if (this.toolbar.video) {
+            this.toolbar.updateProgressBar();
         }
 
         if (
@@ -191,100 +197,9 @@ class App {
         return scene;
     }
 
-    /**
-     * Creates a toolbar with playback controls
-     */
-    createUI() {
-        const onRestart = () => {
-            this.video.currentTime = 0;
-        };
-
-        const onSkip = (val) => {
-            this.video.currentTime += val;
-        };
-
-        const onPlayPause = () => {
-            const paused = this.video.paused;
-            console.log(paused);
-
-            if (paused) {
-                this.video.play();
-            } else {
-                this.video.pause();
-            }
-
-            const label = paused ? "||" : "►";
-            this.ui.updateElement("pause", label);
-        };
-
-        const colors = {
-            blue: {
-                light: "#1bf",
-                lighter: "#3df",
-            },
-            red: "#f00",
-            white: "#fff",
-            yellow: {
-                bright: "#ff0",
-                dark: "#bb0",
-            },
-        };
-
-        const config = {
-            panelSize: { width: 2, height: 0.5 },
-            opacity: 1,
-            height: 128,
-            prev: {
-                type: "button",
-                position: { top: 32, left: 0 },
-                width: 64,
-                fontColor: colors.yellow.dark,
-                hover: colors.yellow.bright,
-                onSelect: () => onSkip(-5),
-            },
-            pause: {
-                type: "button",
-                position: { top: 35, left: 64 },
-                width: 128,
-                height: 52,
-                fontColor: colors.white,
-                backgroundColor: colors.red,
-                hover: colors.yellow.bright,
-                onSelect: onPlayPause,
-            },
-            next: {
-                type: "button",
-                position: { top: 32, left: 192 },
-                width: 64,
-                fontColor: colors.yellow.dark,
-                hover: colors.yellow.bright,
-                onSelect: () => onSkip(5),
-            },
-            restart: {
-                type: "button",
-                position: { top: 35, right: 10 },
-                width: 200,
-                height: 52,
-                fontColor: colors.white,
-                backgroundColor: colors.blue.light,
-                hover: colors.blue.lighter,
-                onSelect: onRestart,
-            },
-            renderer: this.renderer,
-        };
-
-        const content = {
-            prev: "<path>M 10 32 L 54 10 L 54 54 Z</path>",
-            pause: "||",
-            next: "<path>M 54 32 L 10 10 L 10 54 Z</path>",
-            restart: "Restart",
-        };
-
-        const ui = new CanvasUI(content, config);
-        ui.mesh.position.set(0, -1, -3);
-        ui.mesh.rotateX(-Math.PI / 4);
-
-        return ui;
+    createToolbar() {
+        const toolbar = new Toolbar(this.renderer, this.video, true);
+        return toolbar;
     }
 
     /**
@@ -295,6 +210,10 @@ class App {
         const video = document.createElement("video");
         video.loop = true;
         video.src = videoIn;
+
+        video.onloadedmetadata = () => {
+            console.log("Video loaded");
+        };
 
         return video;
     }
@@ -307,7 +226,7 @@ class App {
         // If toolbar not in view, display it
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = true;
-            this.scene.add(this.ui.mesh);
+            this.scene.add(this.toolbarGroup);
         } else {
             // Make toolbar disappear if no interaction with toolbar
             const worldMatrix = new THREE.Matrix4();
@@ -320,13 +239,16 @@ class App {
                 .set(0, 0, -1)
                 .applyMatrix4(worldMatrix);
 
-            const intersections = this.raycaster.intersectObjects([
-                this.ui.mesh,
-            ]);
+            const intersections = this.raycaster.intersectObjects(
+                this.toolbar.objects
+            );
 
             if (intersections.length === 0) {
                 this.scene.userData.isToolbarVisible = false;
-                this.scene.remove(this.ui.mesh);
+                this.scene.remove(this.toolbarGroup);
+            } else {
+                // Handle the intersection with Toolbar
+                this.toolbar.update(intersections);
             }
         }
     }
@@ -349,7 +271,7 @@ class App {
         this.controllers = this.buildControllers();
         for (let controller of this.controllers) {
             controller.addEventListener("disconnected", () => {
-                this.scene.remove(this.ui.mesh);
+                this.scene.remove(this.toolbarGroup);
             });
         }
 
