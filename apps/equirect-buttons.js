@@ -4,6 +4,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 
 import panoVideo from "../media/pano.mp4";
 import buttonClickSound from "../media/audio/button-click.mp3";
+import MediaLayerManager from "../util/MediaLayerManager";
 import Toolbar from "../util/Toolbar";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
@@ -49,7 +50,7 @@ class App {
     /**
      * Renders the scene on the renderer
      */
-    render() {
+    async render() {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
@@ -68,20 +69,18 @@ class App {
             this.video.readyState
         ) {
             session.hasMediaLayer = true;
-            session.requestReferenceSpace("local").then((refSpace) => {
-                const mediaFactory = new XRMediaBinding(session);
-                const equirectLayer = mediaFactory.createEquirectLayer(
-                    this.video,
-                    {
-                        space: refSpace,
-                        layout: "stereo-top-bottom",
-                    }
-                );
-                session.updateRenderState({
-                    layers: [equirectLayer, session.renderState.layers[0]],
-                });
-                this.video.play();
+            const mediaFactory = new MediaLayerManager(session);
+            const equirectLayer = await mediaFactory.createLayer(
+                this.video,
+                MediaLayerManager.EQUIRECT_LAYER,
+                {
+                    layout: "stereo-top-bottom",
+                }
+            );
+            session.updateRenderState({
+                layers: [equirectLayer, session.renderState.layers[0]],
             });
+            this.video.play();
         }
         this.renderer.render(this.scene, this.camera);
     }
