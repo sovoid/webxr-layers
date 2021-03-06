@@ -3,10 +3,11 @@ import * as THREE from "three";
 import { CanvasUI } from "./CanvasUI";
 
 class Toolbar {
-    constructor(renderer, videoIn, isAngled) {
+    constructor(renderer, video, rotateXAngle) {
         this.renderer = renderer;
 
-        this.video = videoIn;
+        console.log(video);
+        this.video = video;
 
         // Buttons and Panel
         this.ui = this.createUI(2, 0.5, 128, { x: 0, y: -1, z: -3 });
@@ -15,7 +16,7 @@ class Toolbar {
         this.progressBar = this.createProgressBar();
 
         // Toolbar Group
-        this.toolbarGroup = this.createToolbarGroup(isAngled, {
+        this.toolbarGroup = this.createToolbarGroup(rotateXAngle, {
             x: 0,
             y: 1.6,
             z: -2,
@@ -48,15 +49,13 @@ class Toolbar {
         return barGroup;
     }
 
-    createToolbarGroup(isAngled, { x, y, z }) {
+    createToolbarGroup(rotateXAngle, { x, y, z }) {
         const toolbarGroup = new THREE.Group();
         toolbarGroup.add(this.ui.mesh);
         toolbarGroup.add(this.progressBar);
 
         toolbarGroup.position.set(x, y, z);
-        if (isAngled) {
-            toolbarGroup.rotateX(-Math.PI / 4);
-        }
+        toolbarGroup.rotateX(rotateXAngle);
 
         return toolbarGroup;
     }
@@ -156,6 +155,7 @@ class Toolbar {
     }
 
     setVideoCurrentTime(xPosition) {
+        console.log(this.video);
         // Set video playback position
         const timeFraction = (xPosition + 1) / 2;
         this.video.currentTime = timeFraction * this.video.duration;
@@ -169,6 +169,16 @@ class Toolbar {
 
         if (intersectionWithProgressBar) {
             this.setVideoCurrentTime(intersectionWithProgressBar.point.x);
+            this.updateProgressBar();
+        }
+    }
+
+    updateOnRender(isXRPresenting) {
+        if (isXRPresenting && this.toolbarGroup) {
+            this.updateUI();
+        }
+
+        if (this.video) {
             this.updateProgressBar();
         }
     }

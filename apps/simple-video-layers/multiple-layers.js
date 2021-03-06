@@ -49,15 +49,16 @@ class App {
             this.video.readyState
         ) {
             session.hasMediaLayer = true;
-            const mediaFactory = new MediaLayerManager(session);
-            const equirectLayer = await mediaFactory.createLayer(
+            const mediaFactory = new MediaLayerManager(session, this.renderer);
+            const equirect = await mediaFactory.createMediaLayer(
                 this.video,
                 MediaLayerManager.EQUIRECT_LAYER,
                 {
                     layout: "stereo-top-bottom",
-                }
+                },
+                -Math.PI / 4
             );
-            const quadLayer = await mediaFactory.createLayer(
+            const quad = await mediaFactory.createMediaLayer(
                 this.video,
                 MediaLayerManager.QUAD_LAYER,
                 {
@@ -68,12 +69,13 @@ class App {
                         z: -2.75,
                         w: 1.0,
                     }),
-                }
+                },
+                0
             );
             session.updateRenderState({
                 layers: [
-                    equirectLayer,
-                    quadLayer,
+                    equirect.videoLayer,
+                    quad.videoLayer,
                     session.renderState.layers[0],
                 ],
             });

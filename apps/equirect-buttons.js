@@ -34,8 +34,9 @@ class App {
         this.raycaster = new THREE.Raycaster();
 
         // Create Toolbar Group
-        this.toolbar = this.createToolbar();
-        this.toolbarGroup = this.toolbar.toolbarGroup;
+        // this.toolbar = this.createToolbar();
+        // this.toolbarGroup = this.toolbar.toolbarGroup;
+        this.mediaLayers = new Map();
 
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
@@ -57,16 +58,17 @@ class App {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
-        if (xr.isPresenting && this.toolbarGroup) {
-            this.toolbar.updateUI();
-        }
-
-        if (this.toolbar.video) {
-            this.toolbar.updateProgressBar();
-        }
+        this.mediaLayers.forEach((mediaLayer) => {
+            mediaLayer.updateOnRender(xr.isPresenting);
+        });
 
         for (const controller of this.controllers) {
-            this.handleToolbarIntersections(controller, this.toolbar.objects);
+            if (this.mediaLayers.get("equirect")) {
+                this.handleToolbarIntersections(
+                    controller,
+                    this.mediaLayers.get("equirect").objects
+                );
+            }
         }
 
         if (
@@ -76,16 +78,18 @@ class App {
             this.video.readyState
         ) {
             session.hasMediaLayer = true;
-            const mediaFactory = new MediaLayerManager(session);
-            const equirectLayer = await mediaFactory.createLayer(
+            const mediaFactory = new MediaLayerManager(session, this.renderer);
+            const equirect = await mediaFactory.createMediaLayer(
                 this.video,
                 MediaLayerManager.EQUIRECT_LAYER,
                 {
                     layout: "stereo-top-bottom",
-                }
+                },
+                -Math.PI / 4
             );
+            this.mediaLayers.set("equirect", equirect);
             session.updateRenderState({
-                layers: [equirectLayer, session.renderState.layers[0]],
+                layers: [equirect.videoLayer, session.renderState.layers[0]],
             });
             this.video.play();
         }
@@ -204,7 +208,7 @@ class App {
     }
 
     createToolbar() {
-        const toolbar = new Toolbar(this.renderer, this.video, true);
+        const toolbar = new Toolbar(this.renderer, this.video, -Math.PI / 4);
         return toolbar;
     }
 
@@ -232,20 +236,22 @@ class App {
         // If toolbar not in view, display it
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = true;
-            this.scene.add(this.toolbarGroup);
+            this.scene.add(this.mediaLayers.get("equirect").toolbarGroup);
         } else {
             // Make toolbar disappear if no interaction with toolbar
             const intersections = this.handleToolbarIntersections(
                 controller,
-                this.toolbar.objects
+                this.mediaLayers.get("equirect").objects
             );
 
             if (intersections.length === 0) {
                 this.scene.userData.isToolbarVisible = false;
-                this.scene.remove(this.toolbarGroup);
+                this.scene.remove(
+                    this.mediaLayers.get("equirect").toolbarGroup
+                );
             } else {
                 // Handle the intersection with Toolbar
-                this.toolbar.update(intersections);
+                this.mediaLayers.get("equirect").update(intersections);
             }
         }
     }
