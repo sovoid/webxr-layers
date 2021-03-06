@@ -28,10 +28,7 @@ class MediaLayerManager {
      */
     async createLayer(video, layerType, options) {
         // Check if layerType is valid
-        if (
-            layerType !== this.QUAD_LAYER &&
-            layerType !== this.EQUIRECT_LAYER
-        ) {
+        if (layerType !== "QUAD_LAYER" && layerType !== "EQUIRECT_LAYER") {
             throw new Error(
                 `Invalid layer type: layer type must be one of "QUAD_LAYER" || "EQUIRECT_LAYER"`
             );
