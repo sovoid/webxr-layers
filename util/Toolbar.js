@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import { CanvasUI } from "../../util/CanvasUI";
+import { CanvasUI } from "./CanvasUI";
 
 class Toolbar {
     constructor(renderer, videoIn, isAngled) {
