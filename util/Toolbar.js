@@ -82,7 +82,7 @@ class Toolbar {
                 this.video.pause();
             }
 
-            const label = paused ? "►" : "||";
+            const label = paused ? "||" : "►";
             this.ui.updateElement("pause", label);
         };
 
