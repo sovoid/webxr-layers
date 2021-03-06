@@ -40,6 +40,9 @@ class App {
         // Hide the toolbar initially
         this.scene.userData.isToolbarVisible = false;
 
+        // Create Intersecting Point
+        this.intersectPoint = this.createIntersectPoint();
+
         this.setupVR();
 
         // We need to bind `this` so that we can refer to the App object inside these methods
@@ -60,6 +63,10 @@ class App {
 
         if (this.toolbar.video) {
             this.toolbar.updateProgressBar();
+        }
+
+        for (const controller of this.controllers) {
+            this.handleToolbarIntersections(controller, this.toolbar.objects);
         }
 
         if (
@@ -103,7 +110,7 @@ class App {
             const sound = new Audio(buttonClickSound);
             sound.play();
 
-            this.handleToolbarIntersection(controller);
+            this.handleTriggerPress(controller);
         };
 
         for (let i = 0; i <= 1; i++) {
@@ -138,7 +145,7 @@ class App {
 
         const line = new THREE.Line(geometry);
         line.name = "line";
-        line.scale.z = 10;
+        line.scale.z = 1;
 
         return line;
     }
@@ -221,24 +228,15 @@ class App {
      * Gets an array of hits on the UI toolbar
      * @param {*} controller controller to detect hits from
      */
-    handleToolbarIntersection(controller) {
+    handleTriggerPress(controller) {
         // If toolbar not in view, display it
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = true;
             this.scene.add(this.toolbarGroup);
         } else {
             // Make toolbar disappear if no interaction with toolbar
-            const worldMatrix = new THREE.Matrix4();
-            worldMatrix.identity().extractRotation(controller.matrixWorld);
-
-            this.raycaster.ray.origin.setFromMatrixPosition(
-                controller.matrixWorld
-            );
-            this.raycaster.ray.direction
-                .set(0, 0, -1)
-                .applyMatrix4(worldMatrix);
-
-            const intersections = this.raycaster.intersectObjects(
+            const intersections = this.handleToolbarIntersections(
+                controller,
                 this.toolbar.objects
             );
 
@@ -250,6 +248,52 @@ class App {
                 this.toolbar.update(intersections);
             }
         }
+    }
+
+    handleToolbarIntersections(controller, objects) {
+        if (!objects) {
+            return;
+            // get array of all meshes if objects to intersect not specified
+            // objects = [];
+            // this.scene.traverse((o) => {
+            //     if (o.isMesh) {
+            //         objects.push(o);
+            //     }
+            // });
+        }
+
+        const worldMatrix = new THREE.Matrix4();
+        worldMatrix.identity().extractRotation(controller.matrixWorld);
+
+        this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+        this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(worldMatrix);
+
+        const intersections = this.raycaster.intersectObjects(objects);
+
+        if (!this.scene.userData.isToolbarVisible) {
+            this.scene.remove(this.intersectPoint);
+            return;
+        }
+
+        if (intersections.length > 0 && this.scene.userData.isToolbarVisible) {
+            this.scene.add(this.intersectPoint);
+
+            const { x, y, z } = intersections[0].point;
+            this.intersectPoint.position.x = x;
+            this.intersectPoint.position.y = y;
+            this.intersectPoint.position.z = z + 0.02;
+            this.intersectPoint.needsUpdate = true;
+        }
+
+        return intersections;
+    }
+
+    createIntersectPoint() {
+        const geometry = new THREE.CircleGeometry(0.02, 10);
+        const material = new THREE.MeshBasicMaterial({ color: 0xbbbbbb });
+        const intersectPoint = new THREE.Mesh(geometry, material);
+
+        return intersectPoint;
     }
 
     /**
