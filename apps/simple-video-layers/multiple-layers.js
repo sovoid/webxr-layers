@@ -3,6 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import panoVideo from "../../media/pano.mp4";
+import MediaLayerManager from "../../util/MediaLayerManager";
 import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 
@@ -37,7 +38,7 @@ class App {
     /**
      * Renders the scene on the renderer
      */
-    render() {
+    async render() {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
@@ -48,17 +49,18 @@ class App {
             this.video.readyState
         ) {
             session.hasMediaLayer = true;
-            session.requestReferenceSpace("local").then((refSpace) => {
-                const mediaFactory = new XRMediaBinding(session);
-                const equirectLayer = mediaFactory.createEquirectLayer(
-                    this.video,
-                    {
-                        space: refSpace,
-                        layout: "stereo-top-bottom",
-                    }
-                );
-                const quadLayer = mediaFactory.createQuadLayer(this.video, {
-                    space: refSpace,
+            const mediaFactory = new MediaLayerManager(session);
+            const equirectLayer = await mediaFactory.createLayer(
+                this.video,
+                MediaLayerManager.EQUIRECT_LAYER,
+                {
+                    layout: "stereo-top-bottom",
+                }
+            );
+            const quadLayer = await mediaFactory.createLayer(
+                this.video,
+                MediaLayerManager.QUAD_LAYER,
+                {
                     layout: "stereo-top-bottom",
                     transform: new XRRigidTransform({
                         x: 0.0,
@@ -66,16 +68,16 @@ class App {
                         z: -2.75,
                         w: 1.0,
                     }),
-                });
-                session.updateRenderState({
-                    layers: [
-                        equirectLayer,
-                        quadLayer,
-                        session.renderState.layers[0],
-                    ],
-                });
-                this.video.play();
+                }
+            );
+            session.updateRenderState({
+                layers: [
+                    equirectLayer,
+                    quadLayer,
+                    session.renderState.layers[0],
+                ],
             });
+            this.video.play();
         }
         this.renderer.render(this.scene, this.camera);
     }
