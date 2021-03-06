@@ -28,7 +28,7 @@ class MediaLayerManager {
         return new MediaLayer(
             layer,
             rotateXAngle,
-            this.video,
+            video,
             this.session,
             this.renderer
         );
