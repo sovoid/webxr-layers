@@ -38,6 +38,9 @@ class App {
         // Create Map of MediaLayers
         this.mediaLayers = new Map();
 
+        // Create Map of Videos for Each Layer
+        this.videos = this.createVideos({ equirect: videoIn, quad: videoIn });
+
         this.setupVR();
 
         // We need to bind `this` so that we can refer to the App object inside these methods
@@ -67,11 +70,18 @@ class App {
             this.handleToolbarIntersections(controller, objects);
         }
 
+        let isVideosReady = true;
+        this.videos.forEach((video) => {
+            if (video.readyState !== 4) {
+                isVideosReady = false;
+            }
+        });
+
         if (
             session &&
             session.renderState.layers &&
             !session.hasMediaLayer &&
-            this.video.readyState
+            isVideosReady
         ) {
             session.hasMediaLayer = true;
             const mediaFactory = new MediaLayerManager(session, this.renderer);
@@ -92,7 +102,7 @@ class App {
                 },
             };
             const equirect = await mediaFactory.createMediaLayer(
-                this.video,
+                this.videos.get("equirect"),
                 MediaLayerManager.EQUIRECT_LAYER,
                 {
                     layout: "stereo-top-bottom",
@@ -111,14 +121,14 @@ class App {
                 },
                 toolbarGroup: {
                     position: {
-                        x: -1,
-                        y: 1.6,
-                        z: -4,
+                        x: 0,
+                        y: 0.5,
+                        z: -2.7,
                     },
                 },
             };
             const quad = await mediaFactory.createMediaLayer(
-                this.video,
+                this.videos.get("quad"),
                 MediaLayerManager.QUAD_LAYER,
                 {
                     layout: "stereo-top-bottom",
@@ -144,7 +154,7 @@ class App {
                     session.renderState.layers[0],
                 ],
             });
-            this.video.play();
+            this.videos.forEach((video) => video.play());
         }
         this.renderer.render(this.scene, this.camera);
     }
@@ -270,6 +280,16 @@ class App {
         };
 
         return video;
+    }
+
+    createVideos(videos) {
+        const videosMap = new Map();
+        for (const layerKey in videos) {
+            const video = this.createVideo(videos[layerKey]);
+            videosMap.set(layerKey, video);
+        }
+
+        return videosMap;
     }
 
     createIntersectPoint() {
