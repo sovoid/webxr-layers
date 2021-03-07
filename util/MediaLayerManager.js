@@ -1,6 +1,9 @@
+import MediaLayer from "./MediaLayer";
+
 class MediaLayerManager {
-    constructor(session) {
+    constructor(session, renderer) {
         this.session = session;
+        this.renderer = renderer;
         this.mediaFactory = this.createMediaFactory();
     }
 
@@ -18,6 +21,24 @@ class MediaLayerManager {
     createMediaFactory() {
         const mediaFactory = new XRMediaBinding(this.session);
         return mediaFactory;
+    }
+
+    async createMediaLayer(
+        video,
+        layerType,
+        options,
+        rotateXAngle,
+        toolbarPositionConfig
+    ) {
+        const layer = await this.createLayer(video, layerType, options);
+        return new MediaLayer(
+            layer,
+            rotateXAngle,
+            video,
+            this.session,
+            this.renderer,
+            toolbarPositionConfig
+        );
     }
 
     /**
