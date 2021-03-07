@@ -23,14 +23,21 @@ class MediaLayerManager {
         return mediaFactory;
     }
 
-    async createMediaLayer(video, layerType, options, rotateXAngle) {
+    async createMediaLayer(
+        video,
+        layerType,
+        options,
+        rotateXAngle,
+        toolbarPositionConfig
+    ) {
         const layer = await this.createLayer(video, layerType, options);
         return new MediaLayer(
             layer,
             rotateXAngle,
             video,
             this.session,
-            this.renderer
+            this.renderer,
+            toolbarPositionConfig
         );
     }
 

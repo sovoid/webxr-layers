@@ -3,24 +3,22 @@ import * as THREE from "three";
 import { CanvasUI } from "./CanvasUI";
 
 class Toolbar {
-    constructor(renderer, video, rotateXAngle) {
+    constructor(renderer, video, rotateXAngle, positionConfig) {
         this.renderer = renderer;
 
-        console.log(video);
         this.video = video;
 
         // Buttons and Panel
-        this.ui = this.createUI(2, 0.5, 128, { x: 0, y: -1, z: -3 });
+        this.ui = this.createUI(positionConfig.ui);
 
         // Progress Bar
         this.progressBar = this.createProgressBar();
 
         // Toolbar Group
-        this.toolbarGroup = this.createToolbarGroup(rotateXAngle, {
-            x: 0,
-            y: 1.6,
-            z: -2,
-        });
+        this.toolbarGroup = this.createToolbarGroup(
+            rotateXAngle,
+            positionConfig.toolbarGroup
+        );
     }
 
     get objects() {
@@ -49,7 +47,7 @@ class Toolbar {
         return barGroup;
     }
 
-    createToolbarGroup(rotateXAngle, { x, y, z }) {
+    createToolbarGroup(rotateXAngle, { position: { x, y, z } }) {
         const toolbarGroup = new THREE.Group();
         toolbarGroup.add(this.ui.mesh);
         toolbarGroup.add(this.progressBar);
@@ -63,7 +61,7 @@ class Toolbar {
     /**
      * Creates a toolbar with playback controls
      */
-    createUI(panelWidth, panelHeight, height, { x, y, z }) {
+    createUI({ panelWidth, panelHeight, height, position: { x, y, z } }) {
         const onRestart = () => {
             this.video.currentTime = 0;
         };
@@ -155,7 +153,6 @@ class Toolbar {
     }
 
     setVideoCurrentTime(xPosition) {
-        console.log(this.video);
         // Set video playback position
         const timeFraction = (xPosition + 1) / 2;
         this.video.currentTime = timeFraction * this.video.duration;

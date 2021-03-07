@@ -2,13 +2,20 @@ import Toolbar from "./Toolbar";
 import GlassLayer from "./GlassLayer";
 
 class MediaLayer {
-    constructor(layer, rotateXAngle, video, session, renderer) {
+    constructor(
+        layer,
+        rotateXAngle,
+        video,
+        session,
+        renderer,
+        toolbarPositionConfig
+    ) {
         this.videoLayer = layer;
         this.video = video;
         this.session = session;
         this.renderer = renderer;
 
-        this.toolbar = this.createToolbar(rotateXAngle);
+        this.toolbar = this.createToolbar(rotateXAngle, toolbarPositionConfig);
 
         this.glassLayer = this.createGlassLayer();
     }
@@ -25,8 +32,13 @@ class MediaLayer {
         const glass = new GlassLayer(this.renderer);
     }
 
-    createToolbar(rotateXAngle) {
-        const toolbar = new Toolbar(this.renderer, this.video, rotateXAngle);
+    createToolbar(rotateXAngle, positionConfig) {
+        const toolbar = new Toolbar(
+            this.renderer,
+            this.video,
+            rotateXAngle,
+            positionConfig
+        );
         return toolbar;
     }
 
