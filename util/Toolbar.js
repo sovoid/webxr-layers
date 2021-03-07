@@ -1,7 +1,6 @@
 import * as THREE from "three";
 
 import { CanvasUI } from "./CanvasUI";
-
 class Toolbar {
     constructor(renderer, video, rotateXAngle, positionConfig) {
         this.renderer = renderer;

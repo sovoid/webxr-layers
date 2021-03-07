@@ -26,9 +26,6 @@ class App {
         // Create Orbit Controls
         this.controls = this.createOrbitControls();
 
-        // Create Video
-        this.video = this.createVideo(videoIn);
-
         // Create Intersecting Point
         this.intersectPoint = this.createIntersectPoint();
 
@@ -167,6 +164,7 @@ class App {
 
         const controllers = [];
 
+        const invisRay = this.buildInvisRay();
         const ray = this.buildRay();
 
         const onSelectStart = (event) => {
@@ -180,13 +178,21 @@ class App {
             this.handleTriggerPress(controller);
         };
 
+        const onSelectEnd = (event) => {
+            const controller = event.target;
+
+            this.handleTriggerRelease(controller);
+        };
+
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
+            controller.add(invisRay.clone());
             controller.add(ray.clone());
             controller.userData.selectPressed = false;
             this.scene.add(controller);
 
             controller.addEventListener("selectstart", onSelectStart);
+            controller.addEventListener("selectend", onSelectEnd);
 
             controllers.push(controller);
 
@@ -199,6 +205,23 @@ class App {
         }
 
         return controllers;
+    }
+
+    buildInvisRay() {
+        const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, -1),
+        ]);
+        const mesh = new THREE.LineBasicMaterial({
+            transparent: true,
+            opacity: 0.0,
+        });
+
+        const line = new THREE.Line(geometry, mesh);
+        line.name = "invis line";
+        line.scale.z = 10;
+
+        return line;
     }
 
     /**
@@ -300,6 +323,8 @@ class App {
         return intersectPoint;
     }
 
+    handleTriggerRelease(controller) {}
+
     /**
      * Gets an array of hits on the UI toolbar
      * @param {*} controller controller to detect hits from
@@ -323,6 +348,19 @@ class App {
                 } else {
                     // Handle the intersection with Toolbar
                     layerObj.update(intersections);
+                }
+
+                if (layerObj.videoLayer instanceof XRQuadLayer) {
+                    console.log(this.intersectPoint.position);
+                    console.log(layerObj.videoLayer.transform.position);
+                    const { x, y, z } = this.intersectPoint.position;
+                    const { w } = layerObj.videoLayer.transform.position;
+                    layerObj.videoLayer.transform = new XRRigidTransform({
+                        x,
+                        y,
+                        z,
+                        w,
+                    });
                 }
             }
         });

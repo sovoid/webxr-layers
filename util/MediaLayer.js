@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 import Toolbar from "./Toolbar";
 import GlassLayer from "./GlassLayer";
 
@@ -30,6 +32,7 @@ class MediaLayer {
 
     createGlassLayer() {
         const glass = new GlassLayer(this.renderer);
+        return glass;
     }
 
     createToolbar(rotateXAngle, positionConfig) {
@@ -51,6 +54,7 @@ class MediaLayer {
     }
 
     updateOnRender(isXRPresenting) {
+        const position = this.videoLayer.transform.position;
         this.toolbar.updateOnRender(isXRPresenting);
     }
 }
