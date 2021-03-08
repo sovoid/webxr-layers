@@ -2,7 +2,8 @@ import * as THREE from "three";
 
 import { CanvasUI } from "./CanvasUI";
 class Toolbar {
-    constructor(renderer, video, rotateXAngle, positionConfig) {
+    constructor(videoLayer, renderer, video, rotateXAngle, positionConfig) {
+        this.videoLayer = videoLayer;
         this.renderer = renderer;
 
         this.video = video;
@@ -167,6 +168,17 @@ class Toolbar {
             this.setVideoCurrentTime(intersectionWithProgressBar.point.x);
             this.updateProgressBar();
         }
+    }
+
+    /**
+     * Updates position of toolbar when quad video layer is moved
+     */
+    updatePosition() {
+        const { x, y, z } = this.videoLayer.transform.position;
+        this.toolbarGroup.position.x = x;
+        this.toolbarGroup.position.y = y - this.videoLayer.height;
+        this.toolbarGroup.position.z = z + 0.05;
+        this.toolbarGroup.position.needsUpdate = true;
     }
 
     updateOnRender(isXRPresenting) {

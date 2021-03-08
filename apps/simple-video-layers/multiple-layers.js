@@ -136,8 +136,7 @@ class App {
                         w: 1.0,
                     }),
                 },
-                0,
-                quadToolbarPositionConfig
+                0
             );
             this.mediaLayers.set("quad", quad);
 
@@ -153,6 +152,7 @@ class App {
             });
             this.videos.forEach((video) => video.play());
         }
+
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -335,6 +335,9 @@ class App {
             if (!this.scene.userData.isToolbarVisible[layerKey]) {
                 this.scene.userData.isToolbarVisible[layerKey] = true;
                 this.scene.add(layerObj.toolbarGroup);
+                if (layerObj.glassLayer) {
+                    this.scene.add(layerObj.glass);
+                }
             } else {
                 // Make toolbar disappear if no interaction with toolbar
                 const intersections = this.handleToolbarIntersections(
@@ -345,22 +348,10 @@ class App {
                 if (intersections.length === 0) {
                     this.scene.userData.isToolbarVisible[layerKey] = false;
                     this.scene.remove(layerObj.toolbarGroup);
+                    this.scene.remove(layerObj.glass);
                 } else {
                     // Handle the intersection with Toolbar
                     layerObj.update(intersections);
-                }
-
-                if (layerObj.videoLayer instanceof XRQuadLayer) {
-                    console.log(this.intersectPoint.position);
-                    console.log(layerObj.videoLayer.transform.position);
-                    const { x, y, z } = this.intersectPoint.position;
-                    const { w } = layerObj.videoLayer.transform.position;
-                    layerObj.videoLayer.transform = new XRRigidTransform({
-                        x,
-                        y,
-                        z,
-                        w,
-                    });
                 }
             }
         });
@@ -403,7 +394,7 @@ class App {
             const { x, y, z } = intersections[0].point;
             this.intersectPoint.position.x = x;
             this.intersectPoint.position.y = y;
-            this.intersectPoint.position.z = z + 0.02;
+            this.intersectPoint.position.z = z + 0.05;
             this.intersectPoint.needsUpdate = true;
         }
 
