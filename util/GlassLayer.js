@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
 class GlassLayer {
-    constructor(videoLayer, renderer) {
-        this.videoLayer = videoLayer;
+    constructor(layer, renderer) {
+        this.layer = layer;
         this.renderer = renderer;
 
-        this.glassObject = this.createGlassObject(this.videoLayer);
+        this.glassObject = this.createGlassObject(this.layer);
     }
 
     get object() {
@@ -54,8 +54,8 @@ class GlassLayer {
     }
 
     updateOnRender() {
-        this.updateDimensions(this.videoLayer);
-        this.updatePosition(this.videoLayer);
+        this.updateDimensions(this.layer);
+        this.updatePosition(this.layer);
     }
 }
 

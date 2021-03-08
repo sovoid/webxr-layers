@@ -2,23 +2,20 @@ import * as THREE from "three";
 
 import { CanvasUI } from "./CanvasUI";
 class Toolbar {
-    constructor(videoLayer, renderer, video, rotateXAngle, positionConfig) {
-        this.videoLayer = videoLayer;
+    constructor(layer, renderer, video, uiConfig, toolbarGroupConfig) {
+        this.layer = layer;
         this.renderer = renderer;
 
         this.video = video;
 
         // Buttons and Panel
-        this.ui = this.createUI(positionConfig.ui);
+        this.ui = this.createUI(uiConfig);
 
         // Progress Bar
         this.progressBar = this.createProgressBar();
 
         // Toolbar Group
-        this.toolbarGroup = this.createToolbarGroup(
-            rotateXAngle,
-            positionConfig.toolbarGroup
-        );
+        this.toolbarGroup = this.createToolbarGroup(toolbarGroupConfig);
     }
 
     get objects() {
@@ -47,13 +44,14 @@ class Toolbar {
         return barGroup;
     }
 
-    createToolbarGroup(rotateXAngle, { position: { x, y, z } }) {
+    createToolbarGroup(toolbarGroupConfig) {
         const toolbarGroup = new THREE.Group();
         toolbarGroup.add(this.ui.mesh);
         toolbarGroup.add(this.progressBar);
 
+        const { x, y, z } = toolbarGroupConfig.position;
         toolbarGroup.position.set(x, y, z);
-        toolbarGroup.rotateX(rotateXAngle);
+        toolbarGroup.rotateX(toolbarGroupConfig.rotateXAngle);
 
         return toolbarGroup;
     }
@@ -61,7 +59,7 @@ class Toolbar {
     /**
      * Creates a toolbar with playback controls
      */
-    createUI({ panelWidth, panelHeight, height, position: { x, y, z } }) {
+    createUI(uiConfig) {
         const onRestart = () => {
             this.video.currentTime = 0;
         };
@@ -97,9 +95,12 @@ class Toolbar {
         };
 
         const config = {
-            panelSize: { width: panelWidth, height: panelHeight },
+            panelSize: {
+                width: uiConfig.panelWidth,
+                height: uiConfig.panelHeight,
+            },
             opacity: 1,
-            height: height,
+            height: uiConfig.height,
             prev: {
                 type: "button",
                 position: { top: 32, left: 0 },
@@ -147,6 +148,7 @@ class Toolbar {
         };
 
         const ui = new CanvasUI(content, config);
+        const { x, y, z } = uiConfig.position;
         ui.mesh.position.set(x, y, z);
 
         return ui;
@@ -174,18 +176,17 @@ class Toolbar {
      * Updates position of toolbar when quad video layer is moved
      */
     updatePosition() {
-        const { x, y, z } = this.videoLayer.transform.position;
+        const { x, y, z } = this.layer.transform.position;
         this.toolbarGroup.position.x = x;
-        this.toolbarGroup.position.y = y - this.videoLayer.height;
+        this.toolbarGroup.position.y = y - this.layer.height / 2;
         this.toolbarGroup.position.z = z + 0.05;
         this.toolbarGroup.position.needsUpdate = true;
     }
 
-    updateOnRender(isXRPresenting) {
-        if (isXRPresenting && this.toolbarGroup) {
+    updateOnRender() {
+        if (this.toolbarGroup) {
             this.updateUI();
         }
-
         if (this.video) {
             this.updateProgressBar();
         }

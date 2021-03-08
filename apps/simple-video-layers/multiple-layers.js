@@ -52,9 +52,11 @@ class App {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
-        this.mediaLayers.forEach((mediaLayer) => {
-            mediaLayer.updateOnRender(xr.isPresenting);
-        });
+        if (xr.isPresenting) {
+            this.mediaLayers.forEach((mediaLayer) => {
+                mediaLayer.updateOnRender();
+            });
+        }
 
         for (const controller of this.controllers) {
             let objects = [];
@@ -83,47 +85,32 @@ class App {
             session.hasMediaLayer = true;
             const mediaFactory = new MediaLayerManager(session, this.renderer);
 
-            const equirectToolbarPositionConfig = {
-                ui: {
-                    panelWidth: 2,
-                    panelHeight: 0.5,
-                    height: 128,
-                    position: { x: 0, y: -1, z: -3 },
-                },
-                toolbarGroup: {
-                    position: {
-                        x: 0,
-                        y: 1.6,
-                        z: -2,
-                    },
+            const uiConfig = {
+                panelWidth: 2,
+                panelHeight: 0.5,
+                height: 128,
+                position: { x: 0, y: -1, z: -3 },
+            };
+            const toolbarGroupConfig = {
+                rotateXAngle: -Math.PI / 4,
+                position: {
+                    x: 0,
+                    y: 1.6,
+                    z: -2,
                 },
             };
+
             const equirect = await mediaFactory.createMediaLayer(
                 this.videos.get("equirect"),
                 MediaLayerManager.EQUIRECT_LAYER,
                 {
                     layout: "stereo-top-bottom",
                 },
-                -Math.PI / 4,
-                equirectToolbarPositionConfig
+                uiConfig,
+                toolbarGroupConfig
             );
             this.mediaLayers.set("equirect", equirect);
 
-            const quadToolbarPositionConfig = {
-                ui: {
-                    panelWidth: 2,
-                    panelHeight: 0.5,
-                    height: 128,
-                    position: { x: 0, y: -1, z: -5 },
-                },
-                toolbarGroup: {
-                    position: {
-                        x: 0,
-                        y: 0.5,
-                        z: -2.7,
-                    },
-                },
-            };
             const quad = await mediaFactory.createMediaLayer(
                 this.videos.get("quad"),
                 MediaLayerManager.QUAD_LAYER,
@@ -136,7 +123,7 @@ class App {
                         w: 1.0,
                     }),
                 },
-                0
+                uiConfig
             );
             this.mediaLayers.set("quad", quad);
 
@@ -145,8 +132,8 @@ class App {
 
             session.updateRenderState({
                 layers: [
-                    equirect.videoLayer,
-                    quad.videoLayer,
+                    equirect.layer,
+                    quad.layer,
                     session.renderState.layers[0],
                 ],
             });
@@ -175,13 +162,13 @@ class App {
             const sound = new Audio(buttonClickSound);
             sound.play();
 
-            this.handleTriggerPress(controller);
+            this.handleSelectStart(controller);
         };
 
         const onSelectEnd = (event) => {
             const controller = event.target;
 
-            this.handleTriggerRelease(controller);
+            this.handleSelectEnd(controller);
         };
 
         for (let i = 0; i <= 1; i++) {
@@ -323,13 +310,13 @@ class App {
         return intersectPoint;
     }
 
-    handleTriggerRelease(controller) {}
+    handleSelectEnd(controller) {}
 
     /**
      * Gets an array of hits on the UI toolbar
      * @param {*} controller controller to detect hits from
      */
-    handleTriggerPress(controller) {
+    handleSelectStart(controller) {
         this.mediaLayers.forEach((layerObj, layerKey) => {
             // If toolbar not in view, display it
             if (!this.scene.userData.isToolbarVisible[layerKey]) {
@@ -377,18 +364,18 @@ class App {
 
         const intersections = this.raycaster.intersectObjects(objects);
 
-        let isAllToolbarsHidden = true;
+        let areAllToolbarsHidden = true;
         this.mediaLayers.forEach((_layerObj, layerKey) => {
             if (this.scene.userData.isToolbarVisible[layerKey]) {
-                isAllToolbarsHidden = false;
+                areAllToolbarsHidden = false;
             }
         });
-        if (isAllToolbarsHidden) {
+        if (areAllToolbarsHidden) {
             this.scene.remove(this.intersectPoint);
             return;
         }
 
-        if (intersections.length > 0 && !isAllToolbarsHidden) {
+        if (intersections.length > 0 && !areAllToolbarsHidden) {
             this.scene.add(this.intersectPoint);
 
             const { x, y, z } = intersections[0].point;

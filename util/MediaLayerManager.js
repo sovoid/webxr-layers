@@ -27,17 +27,17 @@ class MediaLayerManager {
         video,
         layerType,
         options,
-        rotateXAngle,
-        toolbarPositionConfig
+        uiConfig,
+        toolbarGroupConfig
     ) {
         const layer = await this.createLayer(video, layerType, options);
         return new MediaLayer(
             layer,
-            rotateXAngle,
             video,
             this.session,
             this.renderer,
-            toolbarPositionConfig
+            uiConfig,
+            toolbarGroupConfig
         );
     }
 

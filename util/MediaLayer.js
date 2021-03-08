@@ -3,21 +3,14 @@ import * as THREE from "three";
 import Toolbar from "./Toolbar";
 import GlassLayer from "./GlassLayer";
 class MediaLayer {
-    constructor(
-        layer,
-        rotateXAngle,
-        video,
-        session,
-        renderer,
-        toolbarPositionConfig
-    ) {
-        this.videoLayer = layer;
+    constructor(layer, video, session, renderer, uiConfig, toolbarGroupConfig) {
+        this.layer = layer;
         this.video = video;
         this.session = session;
         this.renderer = renderer;
 
-        const positionConfig = this.createPositionConfig(toolbarPositionConfig);
-        this.toolbar = this.createToolbar(rotateXAngle, positionConfig);
+        const toolbarConfig = this.createPositionConfig(toolbarGroupConfig);
+        this.toolbar = this.createToolbar(uiConfig, toolbarConfig);
 
         this.glassLayer = this.createGlassLayer();
     }
@@ -40,19 +33,19 @@ class MediaLayer {
     }
 
     createGlassLayer() {
-        if (this.videoLayer instanceof XRQuadLayer) {
-            const glass = new GlassLayer(this.videoLayer, this.renderer);
+        if (this.layer instanceof XRQuadLayer) {
+            const glass = new GlassLayer(this.layer, this.renderer);
             return glass;
         }
     }
 
-    createToolbar(rotateXAngle, positionConfig) {
+    createToolbar(uiConfig, toolbarGroupConfig) {
         const toolbar = new Toolbar(
-            this.videoLayer,
+            this.layer,
             this.renderer,
             this.video,
-            rotateXAngle,
-            positionConfig
+            uiConfig,
+            toolbarGroupConfig
         );
         return toolbar;
     }
@@ -65,34 +58,26 @@ class MediaLayer {
         this.toolbar.update(intersections);
     }
 
-    updateOnRender(isXRPresenting) {
-        this.toolbar.updateOnRender(isXRPresenting);
+    updateOnRender() {
+        this.toolbar.updateOnRender();
         if (this.glassLayer) {
             this.glassLayer.updateOnRender();
         }
     }
 
-    createPositionConfig(toolbarPositionConfig) {
-        const defaultToolbarPositionConfig = {
-            ui: {
-                panelWidth: 2,
-                panelHeight: 0.5,
-                height: 128,
-                position: { x: 0, y: -1, z: -5 },
-            },
-            toolbarGroup: {
-                position: {
-                    x: this.videoLayer.transform.position.x,
-                    y:
-                        this.videoLayer.transform.position.y -
-                        this.videoLayer.height,
-                    z: this.videoLayer.transform.position.z + 0.05,
-                },
+    createPositionConfig(toolbarGroupConfig) {
+        const { x, y, z } = this.layer.transform.position;
+        const defaultToolbarGroupConfig = {
+            rotateXAngle: 0,
+            position: {
+                x: x,
+                y: y - this.layer.height / 2,
+                z: z + 0.05,
             },
         };
-        return toolbarPositionConfig
-            ? toolbarPositionConfig
-            : defaultToolbarPositionConfig;
+        return toolbarGroupConfig
+            ? toolbarGroupConfig
+            : defaultToolbarGroupConfig;
     }
 }
 
