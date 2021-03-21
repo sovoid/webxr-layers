@@ -307,7 +307,14 @@ class App {
         return intersectPoint;
     }
 
-    handleSelectEnd(controller) {}
+    handleSelectEnd(controller) {
+        this.mediaLayers.forEach((layerObj, layerKey) => {
+            if (layerObj.glassLayer) {
+                layerObj.glassLayer.move();
+                controller.remove(layerObj.glass);
+            }
+        });
+    }
 
     /**
      * Gets an array of hits on the UI toolbar
@@ -336,6 +343,9 @@ class App {
                 } else {
                     // Handle the intersection with Toolbar
                     layerObj.update(intersections);
+                    if (layerObj.glassLayer) {
+                        controller.attach(layerObj.glass);
+                    }
                 }
             }
         });

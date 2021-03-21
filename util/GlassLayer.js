@@ -42,20 +42,40 @@ class GlassLayer {
         this.glassObject.scale.set(2 * width, 2 * height, 1);
     }
 
-    updatePosition({
-        transform: {
-            position: { x, y, z },
-        },
-    }) {
+    /**
+     * Updates position and quaternion of glass layer when quad video layer is moved
+     */
+    updateOrientation(layer) {
+        // update position x, y, z
+        const { x, y, z } = layer.transform.position;
         this.glassObject.position.x = x;
         this.glassObject.position.y = y;
         this.glassObject.position.z = z;
-        this.glassObject.position.needsUpdate = true;
+
+        // update quaternion (3d heading and orientation)
+        this.glassObject.quaternion.copy(layer.transform.orientation);
     }
 
     updateOnRender() {
         this.updateDimensions(this.layer);
-        this.updatePosition(this.layer);
+    }
+
+    move() {
+        // const position = new THREE.Vector3();
+        // const quaternion = new THREE.Quaternion();
+        // this.glassObject.getWorldPosition(position);
+        // this.glassObject.getWorldQuaternion(quaternion);
+        // const { x, y, z } = position;
+        // this.layer.transform = new XRRigidTransform(
+        //     {
+        //         x,
+        //         y,
+        //         z,
+        //         w: 1.0,
+        //     },
+        //     quaternion
+        // );
+        this.updateOrientation(this.layer);
     }
 }
 

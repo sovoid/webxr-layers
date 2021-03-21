@@ -173,14 +173,20 @@ class Toolbar {
     }
 
     /**
-     * Updates position of toolbar when quad video layer is moved
+     * Updates position and quaternion of toolbar when quad video layer is moved
      */
-    updatePosition() {
-        const { x, y, z } = this.layer.transform.position;
+    updateOrientation(layer) {
+        // update positions x, y, z
+        const { x, y, z } = layer.transform.position;
         this.toolbarGroup.position.x = x;
-        this.toolbarGroup.position.y = y - this.layer.height / 2;
+        this.toolbarGroup.position.y = y - layer.height / 2;
         this.toolbarGroup.position.z = z + 0.05;
+
+        // update quaternion (3d heading and orientation)
+        this.toolbarGroup.quaternion.copy(layer.transform.orientation);
+
         this.toolbarGroup.position.needsUpdate = true;
+        this.toolbarGroup.quaternion.needsUpdate = true;
     }
 
     updateOnRender() {
@@ -190,6 +196,7 @@ class Toolbar {
         if (this.video) {
             this.updateProgressBar();
         }
+        this.updateOrientation(this.layer);
     }
 
     updateProgressBar() {
