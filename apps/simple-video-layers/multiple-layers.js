@@ -170,7 +170,7 @@ class App {
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
-            // controller.add(invisRay.clone());
+            controller.add(invisRay.clone());
             controller.add(ray.clone());
             controller.userData.selectPressed = false;
             this.scene.add(controller);
@@ -203,7 +203,7 @@ class App {
 
         const line = new THREE.Line(geometry, mesh);
         line.name = "invis line";
-        line.scale.z = 10;
+        line.scale.z = 30;
 
         return line;
     }
@@ -219,7 +219,7 @@ class App {
 
         const line = new THREE.Line(geometry);
         line.name = "line";
-        line.scale.z = 30;
+        line.scale.z = 1;
 
         return line;
     }
@@ -300,7 +300,7 @@ class App {
     }
 
     createIntersectPoint() {
-        const geometry = new THREE.CircleGeometry(0.02, 10);
+        const geometry = new THREE.SphereGeometry(0.02, 10);
         const material = new THREE.MeshBasicMaterial({ color: 0xbbbbbb });
         const intersectPoint = new THREE.Mesh(geometry, material);
 

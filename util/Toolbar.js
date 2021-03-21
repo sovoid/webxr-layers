@@ -2,8 +2,16 @@ import * as THREE from "three";
 
 import { CanvasUI } from "./CanvasUI";
 class Toolbar {
-    constructor(layer, renderer, video, uiConfig, toolbarGroupConfig) {
+    constructor(
+        layer,
+        glassLayer,
+        renderer,
+        video,
+        uiConfig,
+        toolbarGroupConfig
+    ) {
         this.layer = layer;
+        this.glassLayer = glassLayer;
         this.renderer = renderer;
 
         this.video = video;
@@ -179,7 +187,7 @@ class Toolbar {
         // update positions x, y, z
         const { x, y, z } = layer.transform.position;
         this.toolbarGroup.position.x = x;
-        this.toolbarGroup.position.y = y - layer.height / 2;
+        this.toolbarGroup.position.y = y - layer.height;
         this.toolbarGroup.position.z = z + 0.05;
 
         // update quaternion (3d heading and orientation)
@@ -196,7 +204,9 @@ class Toolbar {
         if (this.video) {
             this.updateProgressBar();
         }
-        this.updateOrientation(this.layer);
+        if (this.glassLayer) {
+            this.updateOrientation(this.layer);
+        }
     }
 
     updateProgressBar() {

@@ -42,6 +42,7 @@ class MediaLayer {
     createToolbar(uiConfig, toolbarGroupConfig) {
         const toolbar = new Toolbar(
             this.layer,
+            this.glassLayer,
             this.renderer,
             this.video,
             uiConfig,
@@ -89,7 +90,7 @@ class MediaLayer {
             rotateXAngle: 0,
             position: {
                 x: x,
-                y: y - this.layer.height / 2,
+                y: y - this.layer.height,
                 z: z + 0.05,
             },
         };
