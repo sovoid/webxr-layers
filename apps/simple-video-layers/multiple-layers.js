@@ -26,9 +26,6 @@ class App {
         // Create Orbit Controls
         this.controls = this.createOrbitControls();
 
-        // Create Intersecting Point
-        this.intersectPoint = this.createIntersectPoint();
-
         // Track which objects are hit
         this.raycaster = new THREE.Raycaster();
 
@@ -155,7 +152,7 @@ class App {
         const ray = this.buildRay();
 
         const onSelectStart = (event) => {
-            // Ftech the controller
+            // Fetch the controller
             const controller = event.target;
 
             // Play sound effect and ray effect
@@ -173,7 +170,7 @@ class App {
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
-            controller.add(invisRay.clone());
+            // controller.add(invisRay.clone());
             controller.add(ray.clone());
             controller.userData.selectPressed = false;
             this.scene.add(controller);
@@ -222,7 +219,7 @@ class App {
 
         const line = new THREE.Line(geometry);
         line.name = "line";
-        line.scale.z = 1;
+        line.scale.z = 30;
 
         return line;
     }
@@ -371,18 +368,29 @@ class App {
             }
         });
         if (areAllToolbarsHidden) {
-            this.scene.remove(this.intersectPoint);
+            this.scene.remove(
+                this.scene.getObjectByName(`${controller.uuid} intersectPoint`)
+            );
             return;
         }
 
         if (intersections.length > 0 && !areAllToolbarsHidden) {
-            this.scene.add(this.intersectPoint);
+            let intersectPoint = this.scene.getObjectByName(
+                `${controller.uuid} intersectPoint`
+            );
 
+            // if there is currently no intersecting point for this controller
+            if (!intersectPoint) {
+                intersectPoint = this.createIntersectPoint();
+                intersectPoint.name = `${controller.uuid} intersectPoint`;
+            }
+
+            this.scene.add(intersectPoint);
             const { x, y, z } = intersections[0].point;
-            this.intersectPoint.position.x = x;
-            this.intersectPoint.position.y = y;
-            this.intersectPoint.position.z = z + 0.05;
-            this.intersectPoint.needsUpdate = true;
+            intersectPoint.position.x = x;
+            intersectPoint.position.y = y;
+            intersectPoint.position.z = z + 0.05;
+            intersectPoint.needsUpdate = true;
         }
 
         return intersections;
