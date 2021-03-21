@@ -16,6 +16,9 @@ class Toolbar {
 
         this.video = video;
 
+        this.uiWidth = uiConfig.panelWidth;
+        this.uiHeight = uiConfig.panelHeight;
+
         // Buttons and Panel
         this.ui = this.createUI(uiConfig);
 
@@ -33,12 +36,12 @@ class Toolbar {
     createProgressBar() {
         const barGroup = new THREE.Group();
 
-        const bgBarGeometry = new THREE.PlaneGeometry(1, 0.1);
+        const bgBarGeometry = new THREE.PlaneGeometry(1, this.uiHeight / 5);
         const bgBarMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const bgBarMesh = new THREE.Mesh(bgBarGeometry, bgBarMaterial);
         bgBarMesh.name = "white progress bar";
 
-        const barGeometry = new THREE.PlaneGeometry(1, 0.1);
+        const barGeometry = new THREE.PlaneGeometry(1, this.uiHeight / 5);
         const barMaterial = new THREE.MeshBasicMaterial({ color: 0xff031b });
         const barMesh = new THREE.Mesh(barGeometry, barMaterial);
         barMesh.name = "red progress bar";
@@ -47,7 +50,7 @@ class Toolbar {
         barGroup.add(bgBarMesh);
 
         const { x, y, z } = this.ui.mesh.position;
-        barGroup.position.set(x, y + 0.3, z);
+        barGroup.position.set(x, y + (3 / 5) * this.uiHeight, z);
 
         return barGroup;
     }
@@ -187,7 +190,7 @@ class Toolbar {
         // update positions x, y, z
         const { x, y, z } = layer.transform.position;
         this.toolbarGroup.position.x = x;
-        this.toolbarGroup.position.y = y - layer.height;
+        this.toolbarGroup.position.y = y;
         this.toolbarGroup.position.z = z + 0.05;
 
         // update quaternion (3d heading and orientation)
@@ -217,13 +220,14 @@ class Toolbar {
             "white progress bar"
         );
 
-        const progress = (this.video.currentTime / this.video.duration) * 2;
+        const progress =
+            (this.video.currentTime / this.video.duration) * this.uiWidth;
         redProgressBar.scale.set(progress, 1, 1);
-        const redOffset = (2 - progress) / 2;
+        const redOffset = (this.uiWidth - progress) / 2;
         redProgressBar.position.x = -redOffset;
         redProgressBar.position.needsUpdate = true;
 
-        whiteProgressBar.scale.set(2 - progress, 1, 1);
+        whiteProgressBar.scale.set(this.uiWidth - progress, 1, 1);
         const whiteOffset = progress / 2;
         whiteProgressBar.position.x = whiteOffset;
         whiteProgressBar.position.needsUpdate = true;

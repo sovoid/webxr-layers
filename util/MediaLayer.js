@@ -90,7 +90,7 @@ class MediaLayer {
             rotateXAngle: 0,
             position: {
                 x: x,
-                y: y - this.layer.height,
+                y: y,
                 z: z + 0.05,
             },
         };

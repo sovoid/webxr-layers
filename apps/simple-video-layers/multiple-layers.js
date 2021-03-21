@@ -82,7 +82,7 @@ class App {
             session.hasMediaLayer = true;
             const mediaFactory = new MediaLayerManager(session, this.renderer);
 
-            const uiConfig = {
+            const uiConfigEquirect = {
                 panelWidth: 2,
                 panelHeight: 0.5,
                 height: 128,
@@ -103,11 +103,17 @@ class App {
                 {
                     layout: "stereo-top-bottom",
                 },
-                uiConfig,
+                uiConfigEquirect,
                 toolbarGroupConfig
             );
             this.mediaLayers.set("equirect", equirect);
 
+            const uiConfigQuad = {
+                panelWidth: 1,
+                panelHeight: 0.2,
+                height: 128,
+                position: { x: 0, y: 0, z: 0 },
+            };
             const quad = await mediaFactory.createMediaLayer(
                 this.videos.get("quad"),
                 MediaLayerManager.QUAD_LAYER,
@@ -120,7 +126,7 @@ class App {
                         w: 1.0,
                     }),
                 },
-                uiConfig
+                uiConfigQuad
             );
             this.mediaLayers.set("quad", quad);
 
