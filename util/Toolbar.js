@@ -165,9 +165,23 @@ class Toolbar {
         return ui;
     }
 
-    setVideoCurrentTime(xPosition) {
+    setVideoCurrentTime(intersection) {
+        const barFraction = intersection.uv.x;
+        let timeFraction;
+
+        if (intersection.object.name === "white progress bar") {
+            // clicked shrinking white bar
+            const whiteBarWidth = intersection.object.scale.x;
+            const redBarWidth = this.uiWidth - whiteBarWidth;
+            timeFraction =
+                (barFraction * whiteBarWidth + redBarWidth) / this.uiWidth;
+        } else if (intersection.object.name === "red progress bar") {
+            // clicked growing red bar
+            const redBarWidth = intersection.object.scale.x;
+            timeFraction = (barFraction * redBarWidth) / this.uiWidth;
+        }
+
         // Set video playback position
-        const timeFraction = (xPosition + 1) / 2;
         this.video.currentTime = timeFraction * this.video.duration;
     }
 
@@ -178,7 +192,7 @@ class Toolbar {
         );
 
         if (intersectionWithProgressBar) {
-            this.setVideoCurrentTime(intersectionWithProgressBar.point.x);
+            this.setVideoCurrentTime(intersectionWithProgressBar);
             this.updateProgressBar();
         }
     }
@@ -186,15 +200,15 @@ class Toolbar {
     /**
      * Updates position and quaternion of toolbar when quad video layer is moved
      */
-    updateOrientation(layer) {
+    updateOrientation(position, quaternion) {
         // update positions x, y, z
-        const { x, y, z } = layer.transform.position;
+        const { x, y, z } = position;
         this.toolbarGroup.position.x = x;
         this.toolbarGroup.position.y = y;
         this.toolbarGroup.position.z = z + 0.05;
 
         // update quaternion (3d heading and orientation)
-        this.toolbarGroup.quaternion.copy(layer.transform.orientation);
+        this.toolbarGroup.quaternion.copy(quaternion);
 
         this.toolbarGroup.position.needsUpdate = true;
         this.toolbarGroup.quaternion.needsUpdate = true;
@@ -208,7 +222,10 @@ class Toolbar {
             this.updateProgressBar();
         }
         if (this.glassLayer) {
-            this.updateOrientation(this.layer);
+            this.updateOrientation(
+                this.layer.transform.position,
+                this.layer.transform.orientation
+            );
         }
     }
 

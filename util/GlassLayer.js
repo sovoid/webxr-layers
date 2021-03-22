@@ -45,15 +45,15 @@ class GlassLayer {
     /**
      * Updates position and quaternion of glass layer when quad video layer is moved
      */
-    updateOrientation(layer) {
+    updateOrientation(position, quaternion) {
         // update position x, y, z
-        const { x, y, z } = layer.transform.position;
+        const { x, y, z } = position;
         this.glassObject.position.x = x;
         this.glassObject.position.y = y;
         this.glassObject.position.z = z;
 
         // update quaternion (3d heading and orientation)
-        this.glassObject.quaternion.copy(layer.transform.orientation);
+        this.glassObject.quaternion.copy(quaternion);
     }
 
     updateOnRender() {
@@ -75,7 +75,10 @@ class GlassLayer {
         //     },
         //     quaternion
         // );
-        this.updateOrientation(this.layer);
+        this.updateOrientation(
+            this.layer.transform.position,
+            this.layer.transform.orientation
+        );
     }
 }
 
