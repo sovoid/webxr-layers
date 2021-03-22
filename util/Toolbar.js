@@ -204,7 +204,7 @@ class Toolbar {
         // update positions x, y, z
         const { x, y, z } = position;
         this.toolbarGroup.position.x = x;
-        this.toolbarGroup.position.y = y;
+        this.toolbarGroup.position.y = y - this.layer.height / 2;
         this.toolbarGroup.position.z = z + 0.05;
 
         // update quaternion (3d heading and orientation)
