@@ -5,7 +5,6 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import panoVideo from "../media/pano.mp4";
 import buttonClickSound from "../media/audio/button-click.mp3";
 import MediaLayerManager from "../util/MediaLayerManager";
-import Toolbar from "../util/Toolbar";
 import { WebGLRenderer } from "../util/WebGLRenderer";
 import { VRButton } from "../util/webxr/VRButton";
 
@@ -30,15 +29,14 @@ class App {
         // Create Video
         this.video = this.createVideo(videoIn);
 
+        // Create Intersecting Point
+        this.intersectPoint = this.createIntersectPoint();
+
         // Track which objects are hit
         this.raycaster = new THREE.Raycaster();
 
-        // Create Toolbar Group
-        this.toolbar = this.createToolbar();
-        this.toolbarGroup = this.toolbar.toolbarGroup;
-
-        // Hide the toolbar initially
-        this.scene.userData.isToolbarVisible = false;
+        // Create Map of MediaLayers
+        this.mediaLayers = new Map();
 
         this.setupVR();
 
@@ -54,12 +52,17 @@ class App {
         const xr = this.renderer.xr;
         const session = xr.getSession();
 
-        if (xr.isPresenting && this.toolbarGroup) {
-            this.toolbar.updateUI();
-        }
+        this.mediaLayers.forEach((mediaLayer) => {
+            mediaLayer.updateOnRender(xr.isPresenting);
+        });
 
-        if (this.toolbar.video) {
-            this.toolbar.updateProgressBar();
+        for (const controller of this.controllers) {
+            if (this.mediaLayers.get("equirect")) {
+                this.handleToolbarIntersections(
+                    controller,
+                    this.mediaLayers.get("equirect").objects
+                );
+            }
         }
 
         if (
@@ -69,16 +72,39 @@ class App {
             this.video.readyState
         ) {
             session.hasMediaLayer = true;
-            const mediaFactory = new MediaLayerManager(session);
-            const equirectLayer = await mediaFactory.createLayer(
+            const mediaFactory = new MediaLayerManager(session, this.renderer);
+
+            const equirectToolbarPositionConfig = {
+                ui: {
+                    panelWidth: 2,
+                    panelHeight: 0.5,
+                    height: 128,
+                    position: { x: 0, y: -1, z: -3 },
+                },
+                toolbarGroup: {
+                    position: {
+                        x: 0,
+                        y: 1.6,
+                        z: -2,
+                    },
+                },
+            };
+            const equirect = await mediaFactory.createMediaLayer(
                 this.video,
                 MediaLayerManager.EQUIRECT_LAYER,
                 {
                     layout: "stereo-top-bottom",
-                }
+                },
+                -Math.PI / 4,
+                equirectToolbarPositionConfig
             );
+            this.mediaLayers.set("equirect", equirect);
+
+            // Hide toolbars initially
+            this.hideToolbars();
+
             session.updateRenderState({
-                layers: [equirectLayer, session.renderState.layers[0]],
+                layers: [equirect.videoLayer, session.renderState.layers[0]],
             });
             this.video.play();
         }
@@ -103,7 +129,7 @@ class App {
             const sound = new Audio(buttonClickSound);
             sound.play();
 
-            this.handleToolbarIntersection(controller);
+            this.handleTriggerPress(controller);
         };
 
         for (let i = 0; i <= 1; i++) {
@@ -138,7 +164,7 @@ class App {
 
         const line = new THREE.Line(geometry);
         line.name = "line";
-        line.scale.z = 10;
+        line.scale.z = 1;
 
         return line;
     }
@@ -196,11 +222,6 @@ class App {
         return scene;
     }
 
-    createToolbar() {
-        const toolbar = new Toolbar(this.renderer, this.video, true);
-        return toolbar;
-    }
-
     /**
      * Creates an HTML video using `videoIn` as src attribute
      * @param {} videoIn video.src
@@ -217,39 +238,93 @@ class App {
         return video;
     }
 
+    createIntersectPoint() {
+        const geometry = new THREE.CircleGeometry(0.02, 10);
+        const material = new THREE.MeshBasicMaterial({ color: 0xbbbbbb });
+        const intersectPoint = new THREE.Mesh(geometry, material);
+
+        return intersectPoint;
+    }
+
     /**
      * Gets an array of hits on the UI toolbar
      * @param {*} controller controller to detect hits from
      */
-    handleToolbarIntersection(controller) {
-        // If toolbar not in view, display it
-        if (!this.scene.userData.isToolbarVisible) {
-            this.scene.userData.isToolbarVisible = true;
-            this.scene.add(this.toolbarGroup);
-        } else {
-            // Make toolbar disappear if no interaction with toolbar
-            const worldMatrix = new THREE.Matrix4();
-            worldMatrix.identity().extractRotation(controller.matrixWorld);
-
-            this.raycaster.ray.origin.setFromMatrixPosition(
-                controller.matrixWorld
-            );
-            this.raycaster.ray.direction
-                .set(0, 0, -1)
-                .applyMatrix4(worldMatrix);
-
-            const intersections = this.raycaster.intersectObjects(
-                this.toolbar.objects
-            );
-
-            if (intersections.length === 0) {
-                this.scene.userData.isToolbarVisible = false;
-                this.scene.remove(this.toolbarGroup);
+    handleTriggerPress(controller) {
+        this.mediaLayers.forEach((layerObj, layerKey) => {
+            // If toolbar not in view, display it
+            if (!this.scene.userData.isToolbarVisible[layerKey]) {
+                this.scene.userData.isToolbarVisible[layerKey] = true;
+                this.scene.add(layerObj.toolbarGroup);
             } else {
-                // Handle the intersection with Toolbar
-                this.toolbar.update(intersections);
+                // Make toolbar disappear if no interaction with toolbar
+                const intersections = this.handleToolbarIntersections(
+                    controller,
+                    layerObj.objects
+                );
+
+                if (intersections.length === 0) {
+                    this.scene.userData.isToolbarVisible[layerKey] = false;
+                    this.scene.remove(layerObj.toolbarGroup);
+                } else {
+                    // Handle the intersection with Toolbar
+                    layerObj.update(intersections);
+                }
             }
+        });
+    }
+
+    handleToolbarIntersections(controller, objects) {
+        if (!objects) {
+            return;
+            // get array of all meshes if objects to intersect not specified
+            // objects = [];
+            // this.scene.traverse((o) => {
+            //     if (o.isMesh) {
+            //         objects.push(o);
+            //     }
+            // });
         }
+
+        const worldMatrix = new THREE.Matrix4();
+        worldMatrix.identity().extractRotation(controller.matrixWorld);
+
+        this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+        this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(worldMatrix);
+
+        const intersections = this.raycaster.intersectObjects(objects);
+
+        let isAllToolbarsHidden = true;
+        this.mediaLayers.forEach((_layerObj, layerKey) => {
+            if (this.scene.userData.isToolbarVisible[layerKey]) {
+                isAllToolbarsHidden = false;
+            }
+        });
+        if (isAllToolbarsHidden) {
+            this.scene.remove(this.intersectPoint);
+            return;
+        }
+
+        if (intersections.length > 0 && !isAllToolbarsHidden) {
+            this.scene.add(this.intersectPoint);
+
+            const { x, y, z } = intersections[0].point;
+            this.intersectPoint.position.x = x;
+            this.intersectPoint.position.y = y;
+            this.intersectPoint.position.z = z + 0.02;
+            this.intersectPoint.needsUpdate = true;
+        }
+
+        return intersections;
+    }
+
+    hideToolbars() {
+        if (!this.scene.userData.isToolbarVisible) {
+            this.scene.userData.isToolbarVisible = {};
+        }
+        this.mediaLayers.forEach((_layerObj, layerName) => {
+            this.scene.userData.isToolbarVisible[layerName] = false;
+        });
     }
 
     /**

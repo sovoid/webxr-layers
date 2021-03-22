@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let app;
 
     switch (window.location.pathname) {
-        case "/controller-interraction":
+        case "/controller-interaction":
             app = new ControllerInteraction();
             break;
         case "/simple-scene":
