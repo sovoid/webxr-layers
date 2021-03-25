@@ -174,6 +174,10 @@ class App {
             this.handleSelectEnd(controller);
         };
 
+        const onDisconnect = () => {
+            this.scene.remove(this.toolbarGroup);
+        }
+
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
             controller.add(invisRay.clone());
@@ -183,6 +187,7 @@ class App {
 
             controller.addEventListener("selectstart", onSelectStart);
             controller.addEventListener("selectend", onSelectEnd);
+            controller.addEventListener("disconnected", onDisconnect);
 
             controllers.push(controller);
 
@@ -437,16 +442,12 @@ class App {
         this.renderer.xr.enabled = true;
 
         this.controllers = this.buildControllers();
-        for (let controller of this.controllers) {
-            controller.addEventListener("disconnected", () => {
-                this.scene.remove(this.toolbarGroup);
-            });
-        }
 
         const vrButton = new VRButton(this.renderer, {
             requiredFeatures: ["layers"],
             optionalFeatures: ["local-floor", "bounded-floor"],
         });
+
         document.body.appendChild(vrButton.domElement);
     }
 }
