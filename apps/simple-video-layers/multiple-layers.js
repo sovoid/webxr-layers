@@ -55,21 +55,23 @@ class App {
             });
         }
 
-        for (const controller of this.controllers) {
-            let objects = [];
-            this.mediaLayers.forEach((mediaLayer) => {
-                if (mediaLayer) {
-                    objects = objects.concat(mediaLayer.objects);
-                }
-            });
+        // for (const controller of this.controllers) {
+        //     const objects = [];
 
-            this.handleToolbarIntersections(controller, objects);
-        }
+        //     this.mediaLayers.forEach((mediaLayer) => {
+        //         if (mediaLayer.objects) {
+        //             objects.push(...mediaLayer.objects);
+        //         }
+        //     });
 
-        let isVideosReady = true;
+        //     this.handleToolbarIntersections(controller, objects);
+        // }
+
+        let areVideosReady = true;
         this.videos.forEach((video) => {
             if (video.readyState !== 4) {
-                isVideosReady = false;
+                areVideosReady = false;
+                break;
             }
         });
 
@@ -77,7 +79,7 @@ class App {
             session &&
             session.renderState.layers &&
             !session.hasMediaLayer &&
-            isVideosReady
+            areVideosReady
         ) {
             session.hasMediaLayer = true;
             const mediaFactory = new MediaLayerManager(session, this.renderer);
@@ -88,6 +90,7 @@ class App {
                 height: 128,
                 position: { x: 0, y: -1, z: -3 },
             };
+
             const toolbarGroupConfig = {
                 rotateXAngle: -Math.PI / 4,
                 position: {
@@ -106,7 +109,6 @@ class App {
                 uiConfigEquirect,
                 toolbarGroupConfig
             );
-            this.mediaLayers.set("equirect", equirect);
 
             const uiConfigQuad = {
                 panelWidth: 1,
@@ -114,6 +116,7 @@ class App {
                 height: 128,
                 position: { x: 0, y: 0, z: 0 },
             };
+
             const quad = await mediaFactory.createMediaLayer(
                 this.videos.get("quad"),
                 MediaLayerManager.QUAD_LAYER,
@@ -128,6 +131,8 @@ class App {
                 },
                 uiConfigQuad
             );
+
+            this.mediaLayers.set("equirect", equirect);
             this.mediaLayers.set("quad", quad);
 
             // Hide toolbars initially
@@ -154,7 +159,7 @@ class App {
 
         const controllers = [];
 
-        const invisRay = this.buildInvisRay();
+        const invisible = this.buildInvisibleRay();
         const ray = this.buildRay();
 
         const onSelectStart = (event) => {
@@ -180,7 +185,7 @@ class App {
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
-            controller.add(invisRay.clone());
+            controller.add(invisible.clone());
             controller.add(ray.clone());
             controller.userData.selectPressed = false;
             this.scene.add(controller);
@@ -202,7 +207,7 @@ class App {
         return controllers;
     }
 
-    buildInvisRay() {
+    buildInvisibleRay() {
         const geometry = new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(0, 0, 0),
             new THREE.Vector3(0, 0, -1),
@@ -213,7 +218,7 @@ class App {
         });
 
         const line = new THREE.Line(geometry, mesh);
-        line.name = "invis line";
+        line.name = "invisibleRay";
         line.scale.z = 30;
 
         return line;
@@ -310,12 +315,16 @@ class App {
         return videosMap;
     }
 
-    createIntersectPoint() {
+    createIntersectPoint(name, coords) {
         const geometry = new THREE.SphereGeometry(0.02, 10);
         const material = new THREE.MeshBasicMaterial({ color: 0xbbbbbb });
-        const intersectPoint = new THREE.Mesh(geometry, material);
+        const point = new THREE.Mesh(geometry, material);
+        point.name = name;
 
-        return intersectPoint;
+        point.position.set(coords.x, coords.y, coords.z);
+        point.needsUpdate = true;
+
+        return point;
     }
 
     handleSelectEnd(controller) {
@@ -337,42 +346,25 @@ class App {
             if (!this.scene.userData.isToolbarVisible[layerKey]) {
                 this.scene.userData.isToolbarVisible[layerKey] = true;
                 this.scene.add(layerObj.toolbarGroup);
+                
                 if (layerObj.glassLayer) {
                     this.scene.add(layerObj.glass);
                 }
             } else {
-                // Make toolbar disappear if no interaction with toolbar
-                const intersections = this.handleToolbarIntersections(
+                this.handleToolbarIntersections(
                     controller,
-                    layerObj.objects
-                );
-
-                if (intersections.length === 0) {
-                    this.scene.userData.isToolbarVisible[layerKey] = false;
-                    this.scene.remove(layerObj.toolbarGroup);
-                    this.scene.remove(layerObj.glass);
-                } else {
-                    // Handle the intersection with Toolbar
-                    layerObj.update(intersections);
-                    if (layerObj.glassLayer) {
-                        controller.attach(layerObj.glass);
+                    {
+                        layerKey,
+                        layerObj
                     }
-                }
+                );
             }
         });
     }
 
-    handleToolbarIntersections(controller, objects) {
-        if (!objects) {
-            return;
-            // get array of all meshes if objects to intersect not specified
-            // objects = [];
-            // this.scene.traverse((o) => {
-            //     if (o.isMesh) {
-            //         objects.push(o);
-            //     }
-            // });
-        }
+    handleToolbarIntersections(controller, layer) {
+        
+        const { layerKey, layerObj } = layer;  
 
         const worldMatrix = new THREE.Matrix4();
         worldMatrix.identity().extractRotation(controller.matrixWorld);
@@ -380,41 +372,39 @@ class App {
         this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
         this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(worldMatrix);
 
-        const intersections = this.raycaster.intersectObjects(objects);
+        // Get intersections with layers
+        const intersections = this.raycaster.intersectObjects(layerObj.objects);
 
         let areAllToolbarsHidden = true;
-        this.mediaLayers.forEach((_layerObj, layerKey) => {
-            if (this.scene.userData.isToolbarVisible[layerKey]) {
+
+        for(const key in this.mediaLayers) {
+            if(this.scene.userData.isToolbarVisible[layerKey]) {
                 areAllToolbarsHidden = false;
+                break;
             }
-        });
+        }
+
         if (areAllToolbarsHidden) {
             this.scene.remove(
                 this.scene.getObjectByName(`${controller.uuid} intersectPoint`)
             );
-            return;
-        }
-
-        if (intersections.length > 0 && !areAllToolbarsHidden) {
-            let intersectPoint = this.scene.getObjectByName(
-                `${controller.uuid} intersectPoint`
-            );
-
-            // if there is currently no intersecting point for this controller
-            if (!intersectPoint) {
-                intersectPoint = this.createIntersectPoint();
-                intersectPoint.name = `${controller.uuid} intersectPoint`;
-            }
+        } else if(intersections.length > 0) {
+            const intersectPoint = this.scene.getObjectByName(
+                `${controller.uuid}IntersectPoint`
+            ) || this.createIntersectPoint(`${controller.uuid}InsersectPoint`, intersections[0]);
 
             this.scene.add(intersectPoint);
-            const { x, y, z } = intersections[0].point;
-            intersectPoint.position.x = x;
-            intersectPoint.position.y = y;
-            intersectPoint.position.z = z + 0.05;
-            intersectPoint.needsUpdate = true;
-        }
 
-        return intersections;
+            layerObj.update(insersections);
+
+            if(layerObj.glassLayer) {
+                controller.attach(layerObj.glass);
+            }
+        } else {
+            this.scene.userData.isToolbarVisible[layerKey] = false;
+            this.scene.remove(layerObj.toolbarGroup);
+            this.scene.remove(layerObj.glass);
+        }
     }
 
     hideToolbars() {
