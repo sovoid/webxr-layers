@@ -33,10 +33,27 @@ export class GlassLayer {
     }
 
     move({ x, y, z }) {
-        this.glassObject.position.x = x;
-        this.glassObject.position.y = y;
-        this.glassObject.position.z = z;
+        this.glassObject.position.set(x, y, z);
         this.glassObject.position.needsUpdate = true;
+    }
+
+    updatePosition() {
+        const position = new THREE.Vector3();
+        const quaternion = new THREE.Quaternion();
+
+        this.glassObject.getWorldPosition(position);
+        this.glassObject.getWorldQuaternion(quaternion);
+
+        const { x, y, z } = position;
+        this.layer.transform = new XRRigidTransform(
+            {
+                x,
+                y,
+                z,
+                w: 1.0,
+            },
+            quaternion
+        );
     }
 
     updateDimensions({ width, height }) {
@@ -46,19 +63,16 @@ export class GlassLayer {
     /**
      * Updates position and quaternion of glass layer when quad video layer is moved
      */
-    updateOrientation(position, quaternion) {
+    updateOrientation(coords, quaternion) {
         // update position x, y, z
-        const { x, y, z } = position;
-        this.glassObject.position.x = x;
-        this.glassObject.position.y = y;
-        this.glassObject.position.z = z;
-
+        this.glassObject.position.set(coords.x, coords.y, coords.z);
         // update quaternion (3d heading and orientation)
         this.glassObject.quaternion.copy(quaternion);
     }
 
     updateOnRender() {
         this.updateDimensions(this.layer);
+        this.updatePosition();
     }
 
     move() {
@@ -76,7 +90,8 @@ export class MediaLayer {
         this.session = session;
         this.renderer = renderer;
 
-        this.glassLayer = this.createGlassLayer();
+        this.glassLayer =
+            this.layer instanceof XRQuadLayer ? this.createGlassLayer() : null;
 
         const toolbarConfig = this.createPositionConfig(toolbarGroupConfig);
         this.toolbar = this.createToolbar(uiConfig, toolbarConfig);
@@ -100,46 +115,21 @@ export class MediaLayer {
     }
 
     createGlassLayer() {
-        if (this.layer instanceof XRQuadLayer) {
-            const glass = new GlassLayer(this.layer, this.renderer);
-            return glass;
-        }
+        const glass = new GlassLayer(this.layer, this.renderer);
+        return glass;
     }
 
     createToolbar(uiConfig, toolbarGroupConfig) {
-        const toolbar = new Toolbar(
-            this.layer,
-            this.renderer,
-            this.video,
-            {
-                uiConfig,
-                toolbarGroupConfig,
-            },
-        );
+        const toolbar = new Toolbar(this.layer, this.renderer, this.video, {
+            uiConfig,
+            toolbarGroupConfig,
+        });
+
         return toolbar;
     }
 
     update(intersections) {
         this.toolbar.update(intersections);
-    }
-
-    updatePosition(glassObject) {
-        const position = new THREE.Vector3();
-        const quaternion = new THREE.Quaternion();
-
-        glassObject.getWorldPosition(position);
-        glassObject.getWorldQuaternion(quaternion);
-
-        const { x, y, z } = position;
-        this.layer.transform = new XRRigidTransform(
-            {
-                x,
-                y,
-                z,
-                w: 1.0,
-            },
-            quaternion
-        );
     }
 
     updateOnRender() {
@@ -148,9 +138,6 @@ export class MediaLayer {
         if (this.glassLayer) {
             this.toolbar.updateOnRender(true);
             this.glassLayer.updateOnRender();
-
-            const glassObject = this.glassLayer.object;
-            this.updatePosition(glassObject);
         }
     }
 
@@ -165,7 +152,7 @@ export class MediaLayer {
             },
         };
 
-        return (toolbarGroupConfig || defaultToolbarGroupConfig);
+        return toolbarGroupConfig || defaultToolbarGroupConfig;
     }
 }
 
@@ -184,6 +171,10 @@ class MediaLayerManager {
         return "EQUIRECT_LAYER";
     }
 
+    static get validLayerTypes() {
+        return [this.EQUIRECT_LAYER, this.QUAD_LAYER];
+    }
+
     /**
      * Create a media factory used to create layers
      */
@@ -199,7 +190,34 @@ class MediaLayerManager {
         uiConfig,
         toolbarGroupConfig
     ) {
-        const layer = await this.createLayer(video, layerType, options);
+        // If layer is invalid, throw an error
+        if (!this.validLayerTypes.includes(layerType)) {
+            throw new Error(
+                `Invalid layer type: layer type must be one of "QUAD_LAYER" || "EQUIRECT_LAYER"`
+            );
+        }
+
+        let layer;
+
+        // Get reference space from the session
+        const refSpace = await this.session.requestReferenceSpace("local");
+
+        // Create a layer based on the layer type
+        switch (layerType) {
+            case "QUAD_LAYER":
+                layer = this.mediaFactory.createQuadLayer(video, {
+                    space: refSpace,
+                    ...options,
+                });
+                break;
+            case "EQUIRECT_LAYER":
+                layer = this.mediaFactory.createEquirectLayer(video, {
+                    space: refSpace,
+                    ...options,
+                });
+                break;
+        }
+
         return new MediaLayer(
             layer,
             video,
@@ -208,44 +226,6 @@ class MediaLayerManager {
             uiConfig,
             toolbarGroupConfig
         );
-    }
-
-    /**
-     *
-     * @param {Object} video
-     * @param {string} layerType One of "QUAD_LAYER", "EQUIRECT_LAYER"
-     * @param {Object} options Options to initialize layer created
-     */
-    async createLayer(video, layerType, options) {
-        // Check if layerType is valid
-        if (layerType !== "QUAD_LAYER" && layerType !== "EQUIRECT_LAYER") {
-            throw new Error(
-                `Invalid layer type: layer type must be one of "QUAD_LAYER" || "EQUIRECT_LAYER"`
-            );
-        } else {
-            let layer;
-
-            // Get reference space from the session
-            const refSpace = await this.session.requestReferenceSpace("local");
-
-            // Create a layer based on the layer type
-            switch (layerType) {
-                case "QUAD_LAYER":
-                    layer = this.mediaFactory.createQuadLayer(video, {
-                        space: refSpace,
-                        ...options,
-                    });
-                    break;
-                case "EQUIRECT_LAYER":
-                    layer = this.mediaFactory.createEquirectLayer(video, {
-                        space: refSpace,
-                        ...options,
-                    });
-                    break;
-            }
-
-            return layer;
-        }
     }
 }
 
