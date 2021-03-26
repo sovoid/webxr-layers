@@ -1,5 +1,5 @@
-import Toolbar from "../Toolbar";
 import GlassLayer from "./GlassLayer";
+import Toolbar from "../Toolbar";
 
 export default class MediaLayer {
     constructor(layer, video, session, renderer, uiConfig, toolbarGroupConfig) {
@@ -19,6 +19,7 @@ export default class MediaLayer {
         if (this.glassLayer) {
             return [...this.toolbar.objects, this.glassLayer.object];
         }
+
         return this.toolbar.objects;
     }
 
@@ -51,7 +52,7 @@ export default class MediaLayer {
     }
 
     updateOnRender() {
-        this.toolbar.updateOnRender(this.glassLayer ? true : false);
+        this.toolbar.updateOnRender(!!this.glassLayer);
 
         if (this.glassLayer) {
             this.glassLayer.updateOnRender();

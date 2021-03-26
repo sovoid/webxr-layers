@@ -58,11 +58,12 @@ class App {
         this.displayIntersectPoints();
 
         let areVideosReady = true;
-        this.videos.forEach((video) => {
-            if (video.readyState !== 4) {
+        for(const videoKey in this.videos) {
+            if(this.videos[videoKey].readyState !== 4) {
                 areVideosReady = false;
+                break;
             }
-        });
+        }
 
         if (
             session &&
@@ -381,54 +382,49 @@ class App {
     }
 
     displayIntersectPoints() {
-        for (const controller of this.controllers) {
-            let objects = [];
-            this.mediaLayers.forEach((mediaLayer) => {
-                if (mediaLayer) {
-                    objects = objects.concat(mediaLayer.objects);
-                }
-            });
+        const objects = [];
 
-            this.displayIntersectPoint(controller, objects);
-        }
-    }
-
-    displayIntersectPoint(controller, objects) {
-        if (!objects) {
-            return;
-        }
-
-        const intersections = this.getObjectsIntersections(controller, objects);
-
-        let areAllToolbarsHidden = true;
-
-        this.mediaLayers.forEach((_layerObj, layerKey) => {
-            if (this.scene.userData.isToolbarVisible[layerKey]) {
-                areAllToolbarsHidden = false;
-            }
+        this.mediaLayers.forEach((mediaLayer) => {
+            objects.push(...mediaLayer.objects);
         });
 
-        if (areAllToolbarsHidden) {
-            this.scene.remove(
-                this.scene.getObjectByName(`${controller.uuid} intersectPoint`)
+        for (const controller of this.controllers) {
+            const intersections = this.getObjectsIntersections(
+                controller,
+                objects
             );
-        } else if (intersections.length > 0) {
-            const intersectPoint =
-                this.scene.getObjectByName(
-                    `${controller.uuid} intersectPoint`
-                ) ||
-                this.createIntersectPoint(
-                    `${controller.uuid} intersectPoint`,
-                    intersections[0]
+
+            let areAllToolbarsHidden = true;
+
+            for (const layerKey in this.mediaLayers) {
+                if (this.scene.userData.isToolbarVisible[layerKey]) {
+                    areAllToolbarsHidden = false;
+                    break;
+                }
+            }
+
+            if (areAllToolbarsHidden) {
+                this.scene.remove(
+                    this.scene.getObjectByName(
+                        `${controller.uuid} intersectPoint`
+                    )
                 );
+            } else if (intersections.length > 0) {
+                const intersectPoint =
+                    this.scene.getObjectByName(
+                        `${controller.uuid} intersectPoint`
+                    ) ||
+                    this.createIntersectPoint(
+                        `${controller.uuid} intersectPoint`,
+                        intersections[0]
+                    );
 
-            // update intersectPoint position
-            intersectPoint.position.x = intersections[0].point.x;
-            intersectPoint.position.y = intersections[0].point.y;
-            intersectPoint.position.z = intersections[0].point.z;
-            intersectPoint.position.needsUpdate = true;
-
-            this.scene.add(intersectPoint);
+                // update intersectPoint position
+                const { x, y, z } = intersections[0].point;
+                intersectPoint.position.set(x, y, z);
+                intersectPoint.position.needsUpdate = true;
+                this.scene.add(intersectPoint);
+            }
         }
     }
 

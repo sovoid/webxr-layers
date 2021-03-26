@@ -4,7 +4,6 @@ export default class GlassLayer {
     constructor(layer, renderer) {
         this.layer = layer;
         this.renderer = renderer;
-
         this.glassObject = this.createGlassObject(this.layer);
     }
 
