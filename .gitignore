@@ -121,3 +121,6 @@ snowpack.key
 
 # Snowpack build
 build/
+
+# MacOS
+.DS_Store
