@@ -148,7 +148,7 @@ class App {
 
         const controllers = [];
 
-        const invisible = this.buildInvisibleRay();
+        const invisibleRay = this.buildInvisibleRay();
         const ray = this.buildRay();
 
         const onSelectStart = (event) => {
@@ -174,7 +174,7 @@ class App {
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
-            controller.add(invisible.clone());
+            controller.add(invisibleRay.clone());
             controller.add(ray.clone());
             controller.userData.selectPressed = false;
             this.scene.add(controller);
