@@ -63,9 +63,9 @@ export class GlassLayer {
     /**
      * Updates position and quaternion of glass layer when quad video layer is moved
      */
-    updateOrientation(coords, quaternion) {
+    updateOrientation(position, quaternion) {
         // update position x, y, z
-        this.glassObject.position.set(coords.x, coords.y, coords.z);
+        this.glassObject.position.set(position.x, position.y, position.z);
         // update quaternion (3d heading and orientation)
         this.glassObject.quaternion.copy(quaternion);
     }
@@ -133,10 +133,9 @@ export class MediaLayer {
     }
 
     updateOnRender() {
-        this.toolbar.updateOnRender(!!this.glassLayer);
+        this.toolbar.updateOnRender(this.glassLayer ? true : false);
 
         if (this.glassLayer) {
-            this.toolbar.updateOnRender(true);
             this.glassLayer.updateOnRender();
         }
     }
@@ -191,7 +190,7 @@ class MediaLayerManager {
         toolbarGroupConfig
     ) {
         // If layer is invalid, throw an error
-        if (!this.validLayerTypes.includes(layerType)) {
+        if (!MediaLayerManager.validLayerTypes.includes(layerType)) {
             throw new Error(
                 `Invalid layer type: layer type must be one of "QUAD_LAYER" || "EQUIRECT_LAYER"`
             );

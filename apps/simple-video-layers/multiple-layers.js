@@ -55,23 +55,12 @@ class App {
             });
         }
 
-        // for (const controller of this.controllers) {
-        //     const objects = [];
-
-        //     this.mediaLayers.forEach((mediaLayer) => {
-        //         if (mediaLayer.objects) {
-        //             objects.push(...mediaLayer.objects);
-        //         }
-        //     });
-
-        //     this.handleToolbarIntersections(controller, objects);
-        // }
+        this.displayIntersectPoints();
 
         let areVideosReady = true;
         this.videos.forEach((video) => {
             if (video.readyState !== 4) {
                 areVideosReady = false;
-                break;
             }
         });
 
@@ -181,7 +170,7 @@ class App {
 
         const onDisconnect = () => {
             this.scene.remove(this.toolbarGroup);
-        }
+        };
 
         for (let i = 0; i <= 1; i++) {
             const controller = this.renderer.xr.getController(i);
@@ -315,16 +304,15 @@ class App {
         return videosMap;
     }
 
-    createIntersectPoint(name, coords) {
+    createIntersectPoint(name, { point }) {
         const geometry = new THREE.SphereGeometry(0.02, 10);
         const material = new THREE.MeshBasicMaterial({ color: 0xbbbbbb });
-        const point = new THREE.Mesh(geometry, material);
-        point.name = name;
+        const intersectPoint = new THREE.Mesh(geometry, material);
+        intersectPoint.name = name;
 
-        point.position.set(coords.x, coords.y, coords.z);
-        point.needsUpdate = true;
+        intersectPoint.position.set(point.x, point.y, point.z);
 
-        return point;
+        return intersectPoint;
     }
 
     handleSelectEnd(controller) {
@@ -346,26 +334,40 @@ class App {
             if (!this.scene.userData.isToolbarVisible[layerKey]) {
                 this.scene.userData.isToolbarVisible[layerKey] = true;
                 this.scene.add(layerObj.toolbarGroup);
-                
+
                 if (layerObj.glassLayer) {
                     this.scene.add(layerObj.glass);
                 }
             } else {
-                this.handleToolbarIntersections(
-                    controller,
-                    {
-                        layerKey,
-                        layerObj
-                    }
-                );
+                this.handleToolbarIntersections(controller, {
+                    layerKey,
+                    layerObj,
+                });
+
+                // Handle moving of video layer
+                if (layerObj.glassLayer) {
+                    controller.attach(layerObj.glass);
+                }
             }
         });
     }
 
-    handleToolbarIntersections(controller, layer) {
-        
-        const { layerKey, layerObj } = layer;  
+    handleToolbarIntersections(controller, { layerKey, layerObj }) {
+        const intersections = this.getObjectsIntersections(
+            controller,
+            layerObj.objects
+        );
 
+        if (intersections.length > 0) {
+            layerObj.update(intersections);
+        } else {
+            this.scene.userData.isToolbarVisible[layerKey] = false;
+            this.scene.remove(layerObj.toolbarGroup);
+            this.scene.remove(layerObj.glass);
+        }
+    }
+
+    getObjectsIntersections(controller, objects) {
         const worldMatrix = new THREE.Matrix4();
         worldMatrix.identity().extractRotation(controller.matrixWorld);
 
@@ -373,37 +375,60 @@ class App {
         this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(worldMatrix);
 
         // Get intersections with layers
-        const intersections = this.raycaster.intersectObjects(layerObj.objects);
+        const intersections = this.raycaster.intersectObjects(objects);
+
+        return intersections;
+    }
+
+    displayIntersectPoints() {
+        for (const controller of this.controllers) {
+            let objects = [];
+            this.mediaLayers.forEach((mediaLayer) => {
+                if (mediaLayer) {
+                    objects = objects.concat(mediaLayer.objects);
+                }
+            });
+
+            this.displayIntersectPoint(controller, objects);
+        }
+    }
+
+    displayIntersectPoint(controller, objects) {
+        if (!objects) {
+            return;
+        }
+
+        const intersections = this.getObjectsIntersections(controller, objects);
 
         let areAllToolbarsHidden = true;
 
-        for(const key in this.mediaLayers) {
-            if(this.scene.userData.isToolbarVisible[layerKey]) {
+        this.mediaLayers.forEach((_layerObj, layerKey) => {
+            if (this.scene.userData.isToolbarVisible[layerKey]) {
                 areAllToolbarsHidden = false;
-                break;
             }
-        }
+        });
 
         if (areAllToolbarsHidden) {
             this.scene.remove(
                 this.scene.getObjectByName(`${controller.uuid} intersectPoint`)
             );
-        } else if(intersections.length > 0) {
-            const intersectPoint = this.scene.getObjectByName(
-                `${controller.uuid}IntersectPoint`
-            ) || this.createIntersectPoint(`${controller.uuid}InsersectPoint`, intersections[0]);
+        } else if (intersections.length > 0) {
+            const intersectPoint =
+                this.scene.getObjectByName(
+                    `${controller.uuid} intersectPoint`
+                ) ||
+                this.createIntersectPoint(
+                    `${controller.uuid} intersectPoint`,
+                    intersections[0]
+                );
+
+            // update intersectPoint position
+            intersectPoint.position.x = intersections[0].point.x;
+            intersectPoint.position.y = intersections[0].point.y;
+            intersectPoint.position.z = intersections[0].point.z;
+            intersectPoint.position.needsUpdate = true;
 
             this.scene.add(intersectPoint);
-
-            layerObj.update(insersections);
-
-            if(layerObj.glassLayer) {
-                controller.attach(layerObj.glass);
-            }
-        } else {
-            this.scene.userData.isToolbarVisible[layerKey] = false;
-            this.scene.remove(layerObj.toolbarGroup);
-            this.scene.remove(layerObj.glass);
         }
     }
 

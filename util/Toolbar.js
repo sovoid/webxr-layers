@@ -2,12 +2,7 @@ import * as THREE from "three";
 
 import { CanvasUI } from "./CanvasUI";
 class Toolbar {
-    constructor(
-        layer,
-        renderer,
-        video,
-        options
-    ) {
+    constructor(layer, renderer, video, options) {
         this.layer = layer;
         this.renderer = renderer;
         this.video = video;
@@ -24,7 +19,7 @@ class Toolbar {
         this.progressBar = this.createProgressBar();
 
         // Toolbar Group
-        this.toolbarGroup = this.createToolbar(toolbarGroupConfig);
+        this.toolbarGroup = this.createToolbarGroup(toolbarGroupConfig);
     }
 
     get objects() {
@@ -215,7 +210,7 @@ class Toolbar {
     /**
      * Updates position and quaternion of toolbar when quad video layer is moved
      */
-     updateOrientation(position, quaternion) {
+    updateOrientation(position, quaternion) {
         // update positions x, y, z
         const { x, y, z } = position;
         this.toolbarGroup.position.x = x;
