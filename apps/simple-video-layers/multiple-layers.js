@@ -4,7 +4,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 
 import panoVideo from "../../media/pano.mp4";
 import buttonClickSound from "../../media/audio/button-click.mp3";
-import MediaLayerManager from "../../util/MediaLayerManager";
+import MediaLayerManager from "../../util/webxr/MediaLayerManager";
 import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 

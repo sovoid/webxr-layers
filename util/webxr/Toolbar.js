@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
-import { CanvasUI } from "./CanvasUI";
+import { CanvasUI } from "../CanvasUI";
+
 class Toolbar {
     constructor(layer, renderer, video, options) {
         this.layer = layer;
