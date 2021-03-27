@@ -58,8 +58,8 @@ class App {
         this.displayIntersectPoints();
 
         let areVideosReady = true;
-        for(const videoKey in this.videos) {
-            if(this.videos[videoKey].readyState !== 4) {
+        for (const [_layerKey, video] of this.videos) {
+            if (video.readyState !== 4) {
                 areVideosReady = false;
                 break;
             }
@@ -396,7 +396,7 @@ class App {
 
             let areAllToolbarsHidden = true;
 
-            for (const layerKey in this.mediaLayers) {
+            for (const [layerKey, _layerObj] of this.mediaLayers) {
                 if (this.scene.userData.isToolbarVisible[layerKey]) {
                     areAllToolbarsHidden = false;
                     break;
@@ -432,8 +432,8 @@ class App {
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = {};
         }
-        this.mediaLayers.forEach((_layerObj, layerName) => {
-            this.scene.userData.isToolbarVisible[layerName] = false;
+        this.mediaLayers.forEach((_layerObj, layerKey) => {
+            this.scene.userData.isToolbarVisible[layerKey] = false;
         });
     }
 
