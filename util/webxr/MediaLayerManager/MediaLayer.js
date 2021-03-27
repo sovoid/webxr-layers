@@ -1,15 +1,15 @@
-import * as THREE from "three";
-
-import Toolbar from "./Toolbar";
 import GlassLayer from "./GlassLayer";
-class MediaLayer {
+import Toolbar from "../Toolbar";
+
+export default class MediaLayer {
     constructor(layer, video, session, renderer, uiConfig, toolbarGroupConfig) {
         this.layer = layer;
         this.video = video;
         this.session = session;
         this.renderer = renderer;
 
-        this.glassLayer = this.createGlassLayer();
+        this.glassLayer =
+            this.layer instanceof XRQuadLayer ? this.createGlassLayer() : null;
 
         const toolbarConfig = this.createPositionConfig(toolbarGroupConfig);
         this.toolbar = this.createToolbar(uiConfig, toolbarConfig);
@@ -19,6 +19,7 @@ class MediaLayer {
         if (this.glassLayer) {
             return [...this.toolbar.objects, this.glassLayer.object];
         }
+
         return this.toolbar.objects;
     }
 
@@ -33,54 +34,28 @@ class MediaLayer {
     }
 
     createGlassLayer() {
-        if (this.layer instanceof XRQuadLayer) {
-            const glass = new GlassLayer(this.layer, this.renderer);
-            return glass;
-        }
+        const glass = new GlassLayer(this.layer, this.renderer);
+        return glass;
     }
 
     createToolbar(uiConfig, toolbarGroupConfig) {
-        const toolbar = new Toolbar(
-            this.layer,
-            this.glassLayer,
-            this.renderer,
-            this.video,
+        const toolbar = new Toolbar(this.layer, this.renderer, this.video, {
             uiConfig,
-            toolbarGroupConfig
-        );
+            toolbarGroupConfig,
+        });
+
         return toolbar;
     }
-
-    resize() {}
 
     update(intersections) {
         this.toolbar.update(intersections);
     }
 
-    updatePosition(glassObject) {
-        const position = new THREE.Vector3();
-        const quaternion = new THREE.Quaternion();
-        glassObject.getWorldPosition(position);
-        glassObject.getWorldQuaternion(quaternion);
-        const { x, y, z } = position;
-        this.layer.transform = new XRRigidTransform(
-            {
-                x,
-                y,
-                z,
-                w: 1.0,
-            },
-            quaternion
-        );
-    }
-
     updateOnRender() {
-        this.toolbar.updateOnRender();
+        this.toolbar.updateOnRender(!!this.glassLayer);
+
         if (this.glassLayer) {
             this.glassLayer.updateOnRender();
-
-            const glassObject = this.glassLayer.object;
-            this.updatePosition(glassObject);
         }
     }
 
@@ -94,10 +69,7 @@ class MediaLayer {
                 z: z + 0.05,
             },
         };
-        return toolbarGroupConfig
-            ? toolbarGroupConfig
-            : defaultToolbarGroupConfig;
+
+        return toolbarGroupConfig || defaultToolbarGroupConfig;
     }
 }
-
-export default MediaLayer;
