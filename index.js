@@ -1,6 +1,5 @@
 import {
     ControllerInteraction,
-    EquirectButtons,
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
