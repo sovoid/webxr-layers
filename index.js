@@ -22,9 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
         case "/multiple-layers":
             app = new MultipleLayers();
             break;
-        case "/equirect-buttons":
-            app = new EquirectButtons();
-            break;
         default:
             const indexContainer = document.querySelector(".container");
             indexContainer.style.display = "";
