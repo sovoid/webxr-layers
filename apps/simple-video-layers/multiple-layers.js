@@ -432,8 +432,8 @@ class App {
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = {};
         }
-        
-        for(const layerKey of this.mediaLayers.keys()) {
+
+        for (const layerKey of this.mediaLayers.keys()) {
             this.scene.userData.isToolbarVisible[layerKey] = false;
         }
     }

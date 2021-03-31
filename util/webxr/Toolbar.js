@@ -86,6 +86,16 @@ class Toolbar {
             this.ui.updateElement("pause", label);
         };
 
+        const onExpand = () => {
+            this.layer.width *= 1.25;
+            this.layer.height *= 1.25;
+        };
+
+        const onCompress = () => {
+            this.layer.width /= 1.25;
+            this.layer.height /= 1.25;
+        };
+
         const colors = {
             blue: {
                 light: "#1bf",
@@ -97,6 +107,7 @@ class Toolbar {
                 bright: "#ff0",
                 dark: "#bb0",
             },
+            black: "#000",
         };
 
         const config = {
@@ -117,7 +128,7 @@ class Toolbar {
             pause: {
                 type: "button",
                 position: { top: 35, left: 64 },
-                width: 128,
+                width: 96,
                 height: 52,
                 fontColor: colors.white,
                 backgroundColor: colors.red,
@@ -126,18 +137,38 @@ class Toolbar {
             },
             next: {
                 type: "button",
-                position: { top: 32, left: 192 },
+                position: { top: 32, left: 160 },
                 width: 64,
                 fontColor: colors.yellow.dark,
                 hover: colors.yellow.bright,
                 onSelect: () => onSkip(5),
             },
+            expand: {
+                type: "button",
+                position: { top: 35, right: 200 },
+                width: 32,
+                height: 52,
+                fontColor: colors.black,
+                backgroundColor: colors.blue.light,
+                hover: colors.blue.lighter,
+                onSelect: onExpand,
+            },
+            compress: {
+                type: "button",
+                position: { top: 35, right: 240 },
+                width: 32,
+                height: 52,
+                fontColor: colors.black,
+                backgroundColor: colors.blue.light,
+                hover: colors.blue.lighter,
+                onSelect: onCompress,
+            },
             restart: {
                 type: "button",
                 position: { top: 35, right: 10 },
-                width: 200,
+                width: 150,
                 height: 52,
-                fontColor: colors.white,
+                fontColor: colors.black,
                 backgroundColor: colors.blue.light,
                 hover: colors.blue.lighter,
                 onSelect: onRestart,
@@ -149,6 +180,8 @@ class Toolbar {
             prev: "<path>M 10 32 L 54 10 L 54 54 Z</path>",
             pause: "||",
             next: "<path>M 54 32 L 10 10 L 10 54 Z</path>",
+            expand: "E",
+            compress: "C",
             restart: "Restart",
         };
 
