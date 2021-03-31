@@ -3,7 +3,6 @@ import {
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
-    HandsLayers,
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -21,9 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/multiple-layers":
             app = new MultipleLayers();
-            break;
-        case "/hands-layers":
-            app = new HandsLayers();
             break;
         default:
             const indexContainer = document.querySelector(".container");
