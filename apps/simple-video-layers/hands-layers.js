@@ -36,6 +36,7 @@ class App {
         // Create Map of Videos for Each Layer
         this.videos = this.createVideos({ equirect: videoIn, quad: videoIn });
 
+        this.controllers = [];
         this.setupVR();
 
         // We need to bind `this` so that we can refer to the App object inside these methods
@@ -115,8 +116,8 @@ class App {
                     layout: "stereo-top-bottom",
                     transform: new XRRigidTransform({
                         x: 0.0,
-                        y: 1.3,
-                        z: -2.75,
+                        y: 1.7,
+                        z: -1.75,
                         w: 1.0,
                     }),
                 },
@@ -151,15 +152,12 @@ class App {
             "../../util/models/fbx/"
         );
 
-        const controllers = [];
-
         const invisibleRay = this.buildInvisibleRay();
         const ray = this.buildRay();
 
         const onSelectStart = (event) => {
             // Fetch the controller
             const controller = event.target;
-            console.log(controller);
 
             // Play sound effect and ray effect
             const sound = new Audio(buttonClickSound);
@@ -174,8 +172,19 @@ class App {
             this.handleSelectEnd(controller);
         };
 
-        const onDisconnect = () => {
+        const onConnect = (event) => {
+            console.log("controller connected");
+            const controller = event.target;
+
+            this.controllers.push(controller);
+        };
+
+        const onDisconnect = (event) => {
+            console.log("controller disconnected");
+            const controller = event.target;
+
             this.scene.remove(this.toolbarGroup);
+            this.controllers.filter((c) => c !== controller);
         };
 
         for (let i = 0; i <= 1; i++) {
@@ -187,10 +196,12 @@ class App {
 
             controller.addEventListener("selectstart", onSelectStart);
             controller.addEventListener("selectend", onSelectEnd);
+            controller.addEventListener("connected", onConnect);
             controller.addEventListener("disconnected", onDisconnect);
 
-            controllers.push(controller);
+            // controllers.push(controller);
 
+            // Objects
             // Controller Grip
             const grip = this.renderer.xr.getControllerGrip(i);
             const controllerModel = controllerModelFactory.createControllerModel(
@@ -199,13 +210,12 @@ class App {
             grip.add(controllerModel);
             this.scene.add(grip);
 
+            // Hand
             const hand = this.renderer.xr.getHand(i);
             const handModel = handModelFactory.createHandModel(hand, "oculus");
             hand.add(handModel);
             this.scene.add(hand);
         }
-
-        return controllers;
     }
 
     buildInvisibleRay() {
@@ -381,6 +391,7 @@ class App {
 
     getObjectsIntersections(controller, objects) {
         const worldMatrix = new THREE.Matrix4();
+        console.log(controller);
         worldMatrix.identity().extractRotation(controller.matrixWorld);
 
         this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
@@ -463,7 +474,7 @@ class App {
     setupVR() {
         this.renderer.xr.enabled = true;
 
-        this.controllers = this.buildControllers();
+        this.buildControllers();
 
         const vrButton = new VRButton(this.renderer, {
             requiredFeatures: ["layers"],
