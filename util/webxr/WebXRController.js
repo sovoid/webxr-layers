@@ -1,15 +1,17 @@
+/**
+ * Three.js does not natively support WebXR Hands target ray so we have to extend this class like so
+ */
+
 import { Group } from "three/src/objects/Group.js";
 
-function WebXRController() {
-    this._targetRay = null;
-    this._grip = null;
-    this._hand = null;
-}
+class WebXRController {
+    constructor() {
+        this._targetRay = null;
+        this._grip = null;
+        this._hand = null;
+    }
 
-Object.assign(WebXRController.prototype, {
-    constructor: WebXRController,
-
-    getHandSpace: function () {
+    getHandSpace() {
         if (this._hand === null) {
             this._hand = new Group();
             this._hand.matrixAutoUpdate = false;
@@ -20,9 +22,9 @@ Object.assign(WebXRController.prototype, {
         }
 
         return this._hand;
-    },
+    }
 
-    getTargetRaySpace: function () {
+    getTargetRaySpace() {
         if (this._targetRay === null) {
             this._targetRay = new Group();
             this._targetRay.matrixAutoUpdate = false;
@@ -30,9 +32,9 @@ Object.assign(WebXRController.prototype, {
         }
 
         return this._targetRay;
-    },
+    }
 
-    getGripSpace: function () {
+    getGripSpace() {
         if (this._grip === null) {
             this._grip = new Group();
             this._grip.matrixAutoUpdate = false;
@@ -40,9 +42,9 @@ Object.assign(WebXRController.prototype, {
         }
 
         return this._grip;
-    },
+    }
 
-    dispatchEvent: function (event) {
+    dispatchEvent(event) {
         if (this._targetRay !== null) {
             this._targetRay.dispatchEvent(event);
         }
@@ -56,9 +58,9 @@ Object.assign(WebXRController.prototype, {
         }
 
         return this;
-    },
+    }
 
-    disconnect: function (inputSource) {
+    disconnect(inputSource) {
         this.dispatchEvent({ type: "disconnected", data: inputSource });
 
         if (this._targetRay !== null) {
@@ -74,9 +76,9 @@ Object.assign(WebXRController.prototype, {
         }
 
         return this;
-    },
+    }
 
-    update: function (inputSource, frame, referenceSpace) {
+    update(inputSource, frame, referenceSpace) {
         let inputPose = null;
         let gripPose = null;
         let handPose = null;
@@ -205,7 +207,7 @@ Object.assign(WebXRController.prototype, {
         }
 
         return this;
-    },
-});
+    }
+}
 
 export { WebXRController };
