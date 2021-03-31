@@ -8,7 +8,8 @@ import { PerspectiveCamera } from "three/src/cameras/PerspectiveCamera";
 import { Vector3 } from "three/src/math/Vector3";
 import { Vector4 } from "three/src/math/Vector4";
 import { WebGLAnimation } from "three/src/renderers/webgl/WebGLAnimation";
-import { WebXRController } from "three/src/renderers/webxr/WebXRController";
+
+import { WebXRController } from "./WebXRController";
 
 class WebXRManager {
     constructor(renderer, gl) {
