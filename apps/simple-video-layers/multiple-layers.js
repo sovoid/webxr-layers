@@ -320,7 +320,7 @@ class App {
         this.mediaLayers.forEach((layerObj, layerKey) => {
             if (layerObj.glassLayer) {
                 layerObj.glassLayer.move();
-                controller.remove(layerObj.glass);
+                layerObj.glassLayer.detach(controller);
             }
         });
     }
@@ -337,7 +337,7 @@ class App {
                 this.scene.add(layerObj.toolbarGroup);
 
                 if (layerObj.glassLayer) {
-                    this.scene.add(layerObj.glass);
+                    this.scene.add(layerObj.glassLayer.object);
                 }
             } else {
                 this.handleToolbarIntersections(controller, {
@@ -347,7 +347,7 @@ class App {
 
                 // Handle moving of video layer
                 if (layerObj.glassLayer) {
-                    controller.attach(layerObj.glass);
+                    layerObj.glassLayer.attach(controller);
                 }
             }
         });

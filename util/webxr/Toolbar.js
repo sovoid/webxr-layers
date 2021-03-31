@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import { CanvasUI } from "../CanvasUI";
 
+const RESIZE_HANDLE_THICKNESS = 0.05;
 class Toolbar {
     constructor(layer, renderer, video, options) {
         this.layer = layer;
@@ -19,12 +20,28 @@ class Toolbar {
         // Progress Bar
         this.progressBar = this.createProgressBar();
 
+        // Resize Handle
+        this.resizeHandle = this.createResizeHandle();
+
         // Toolbar Group
         this.toolbarGroup = this.createToolbarGroup(toolbarGroupConfig);
     }
 
     get objects() {
-        return [this.ui.mesh, ...this.progressBar.children];
+        return [this.ui.mesh, ...this.progressBar.children, this.resizeHandle];
+    }
+
+    createResizeHandle() {
+        const handleGeometry = new THREE.PlaneGeometry(1, 1); // to scale
+        const handleMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+
+        // bottom handle
+        const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+        handle.scale.set(this.layer.width, RESIZE_HANDLE_THICKNESS, 1);
+        const { x, y, z } = this.ui.mesh.position;
+        handle.position.set(x, y - this.uiHeight, z);
+
+        return handle;
     }
 
     createProgressBar() {
@@ -53,6 +70,7 @@ class Toolbar {
         const toolbarGroup = new THREE.Group();
         toolbarGroup.add(this.ui.mesh);
         toolbarGroup.add(this.progressBar);
+        toolbarGroup.add(this.resizeHandle);
 
         const { x, y, z } = toolbarGroupConfig.position;
         toolbarGroup.position.set(x, y, z);
@@ -239,6 +257,8 @@ class Toolbar {
                 this.layer.transform.orientation
             );
         }
+
+        this.updateResizeHandle();
     }
 
     /**
@@ -256,6 +276,14 @@ class Toolbar {
 
         this.toolbarGroup.position.needsUpdate = true;
         this.toolbarGroup.quaternion.needsUpdate = true;
+    }
+
+    updateResizeHandle() {
+        this.resizeHandle.scale.set(
+            this.layer.width,
+            RESIZE_HANDLE_THICKNESS,
+            1
+        );
     }
 
     /**
