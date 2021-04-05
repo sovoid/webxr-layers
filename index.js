@@ -1,5 +1,6 @@
 import {
     ControllerInteraction,
+    HandInput,
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
@@ -11,6 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
     switch (window.location.pathname) {
         case "/controller-interaction":
             app = new ControllerInteraction();
+            break;
+        case "/hand-input":
+            app = new HandInput();
             break;
         case "/simple-scene":
             app = new SimpleScene();
