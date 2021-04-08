@@ -22,6 +22,7 @@ class Toolbar {
 
         // Resize Handle
         this.resizeHandle = this.createResizeHandle();
+        this.resizeHandleClone = null;
 
         // Toolbar Group
         this.toolbarGroup = this.createToolbarGroup(toolbarGroupConfig);
@@ -284,6 +285,61 @@ class Toolbar {
             RESIZE_HANDLE_THICKNESS,
             1
         );
+    }
+
+    /**
+     * Store the resizeHandle's position at the moment of engaging fluid resizing.
+     * Currently uses the resizeHandle itself, but intend to use a transparent clone
+     * of the resizeHandle to handle the engage/disengage, while keeping the actual
+     * visible resizeHandle "fixed" at the same position as the layer is resized.
+     */
+    engageResize(controller) {
+        // this.resizeHandleClone = this.resizeHandle.clone();
+        // this.resizeHandleClone.material = new THREE.MeshBasicMaterial({
+        //     transparent: true,
+        //     opacity: 0.5, // test
+        // });
+        // this.resizeHandleClone.name = "resizeHandle";
+        // const engagePosition = new THREE.Vector3();
+        // this.resizeHandleClone.getWorldPosition(engagePosition);
+        // controller.attach(this.resizeHandleClone);
+        // this.resizeHandleClone.userData.engageResizePosition = engagePosition;
+        // console.log(this.resizeHandleClone);
+
+        const engagePosition = new THREE.Vector3();
+        // world position necessary
+        this.resizeHandle.getWorldPosition(engagePosition);
+        this.resizeHandle.name = "resizeHandle";
+        controller.attach(this.resizeHandle);
+        this.resizeHandle.userData.engageResizePosition = engagePosition;
+        console.log(this.resizeHandle);
+    }
+
+    /**
+     *
+     */
+    disengageResize(controller) {
+        // const resizeHandleClone = controller.getObjectByName("resizeHandle");
+        // console.log(resizeHandleClone);
+        // const engagePosition = resizeHandleClone.userData.engageResizePosition;
+        // const disengagePosition = new THREE.Vector3();
+        // resizeHandleClone.getWorldPosition(disengagePosition);
+        // const distance = engagePosition.distanceTo(disengagePosition);
+        // console.log(distance);
+        // controller.remove(resizeHandleClone);
+
+        const resizeHandle = controller.getObjectByName("resizeHandle");
+        console.log(resizeHandle);
+        const engagePosition = resizeHandle.userData.engageResizePosition;
+        const disengagePosition = new THREE.Vector3();
+        resizeHandle.getWorldPosition(disengagePosition);
+        // absolute euclidean distance
+        const distance = engagePosition.distanceTo(disengagePosition);
+
+        // use distance to scale layer proportionally, on each render (fluid resizing)
+        console.log(distance);
+
+        controller.remove(resizeHandle);
     }
 
     /**

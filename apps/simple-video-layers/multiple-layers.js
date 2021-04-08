@@ -318,9 +318,13 @@ class App {
 
     handleSelectEnd(controller) {
         this.mediaLayers.forEach((layerObj, layerKey) => {
-            if (layerObj.glassLayer) {
+            if (controller.userData.engagedMove && layerObj.glassLayer) {
                 layerObj.glassLayer.move();
                 layerObj.glassLayer.detach(controller);
+            }
+            if (controller.userData.engagedResize && layerObj) {
+                layerObj.toolbar.disengageResize(controller);
+                controller.userData.engagedResize = false;
             }
         });
     }
@@ -344,11 +348,6 @@ class App {
                     layerKey,
                     layerObj,
                 });
-
-                // Handle moving of video layer
-                if (layerObj.glassLayer) {
-                    layerObj.glassLayer.attach(controller);
-                }
             }
         });
     }
@@ -361,6 +360,19 @@ class App {
 
         if (intersections.length > 0) {
             layerObj.update(intersections);
+
+            // Handle moving of video layer
+            if (intersections[0].object === layerObj.glassLayer.object) {
+                console.log("move engaged");
+                controller.userData.engagedMove = true;
+                layerObj.glassLayer.attach(controller);
+            } else if (
+                intersections[0].object === layerObj.toolbar.resizeHandle
+            ) {
+                console.log("resize engaged");
+                controller.userData.engagedResize = true;
+                layerObj.toolbar.engageResize(controller);
+            }
         } else {
             this.scene.userData.isToolbarVisible[layerKey] = false;
             this.scene.remove(layerObj.toolbarGroup);
