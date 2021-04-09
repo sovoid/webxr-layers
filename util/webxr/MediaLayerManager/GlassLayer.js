@@ -48,7 +48,11 @@ export default class GlassLayer {
     /**
      * Updates position and quaternion of media layer when glass layer is moved
      */
-    updateLayerOrientation(position, quaternion) {
+    updateLayerOrientation() {
+        const position = new THREE.Vector3();
+        const quaternion = new THREE.Quaternion();
+        this.glassObject.getWorldPosition(position);
+        this.glassObject.getWorldQuaternion(quaternion);
         const { x, y, z } = position;
         this.layer.transform = new XRRigidTransform(
             {
@@ -63,12 +67,7 @@ export default class GlassLayer {
 
     updateOnRender() {
         this.updateDimensions(this.layer);
-
-        const position = new THREE.Vector3();
-        const quaternion = new THREE.Quaternion();
-        this.glassObject.getWorldPosition(position);
-        this.glassObject.getWorldQuaternion(quaternion);
-        this.updateLayerOrientation(position, quaternion);
+        this.updateLayerOrientation();
     }
 
     move() {
