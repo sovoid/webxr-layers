@@ -1,8 +1,10 @@
 import * as THREE from "three";
 
 import { CanvasUI } from "../CanvasUI";
-
 const RESIZE_HANDLE_THICKNESS = 0.05;
+const MIN_LAYER_WIDTH = 0.5;
+const MAX_LAYER_WIDTH = 10;
+
 class Toolbar {
     constructor(layer, renderer, video, options) {
         this.layer = layer;
@@ -42,6 +44,7 @@ class Toolbar {
         const { x, y, z } = this.ui.mesh.position;
         handle.position.set(x, y - this.uiHeight, z);
 
+        handle.name = "resizeHandle";
         return handle;
     }
 
@@ -252,6 +255,8 @@ class Toolbar {
             this.updateProgressBar();
         }
 
+        this.updateResizeHandle();
+
         if (hasGlassLayer) {
             this.updateOrientation(
                 this.layer.transform.position,
@@ -259,7 +264,7 @@ class Toolbar {
             );
         }
 
-        this.updateResizeHandle();
+        this.fluidResize();
     }
 
     /**
@@ -294,52 +299,74 @@ class Toolbar {
      * visible resizeHandle "fixed" at the same position as the layer is resized.
      */
     engageResize(controller) {
-        // this.resizeHandleClone = this.resizeHandle.clone();
-        // this.resizeHandleClone.material = new THREE.MeshBasicMaterial({
-        //     transparent: true,
-        //     opacity: 0.5, // test
-        // });
-        // this.resizeHandleClone.name = "resizeHandle";
-        // const engagePosition = new THREE.Vector3();
-        // this.resizeHandleClone.getWorldPosition(engagePosition);
-        // controller.attach(this.resizeHandleClone);
-        // this.resizeHandleClone.userData.engageResizePosition = engagePosition;
-        // console.log(this.resizeHandleClone);
+        const { x, y, z } = this.resizeHandle.position;
+        const pointGeometry = new THREE.PlaneGeometry(0.1, 0.1);
+
+        this.handleLeftPoint = new THREE.Points(pointGeometry);
+        this.handleLeftPoint.position.set(x - this.layer.width / 2, y, z);
+        this.handleRightPoint = new THREE.Points(pointGeometry);
+        this.handleRightPoint.position.set(x + this.layer.width / 2, y, z);
+
+        this.resizeHandleClone = this.resizeHandle.clone();
+        this.resizeHandleClone.name = "resizeHandleClone";
 
         const engagePosition = new THREE.Vector3();
         // world position necessary
-        this.resizeHandle.getWorldPosition(engagePosition);
-        this.resizeHandle.name = "resizeHandle";
-        controller.attach(this.resizeHandle);
-        this.resizeHandle.userData.engageResizePosition = engagePosition;
-        console.log(this.resizeHandle);
+        this.resizeHandleClone.getWorldPosition(engagePosition);
+        controller.attach(this.resizeHandleClone);
+        this.resizeHandleClone.userData.engageResizePosition = engagePosition;
     }
 
-    /**
-     *
-     */
-    disengageResize(controller) {
-        // const resizeHandleClone = controller.getObjectByName("resizeHandle");
-        // console.log(resizeHandleClone);
-        // const engagePosition = resizeHandleClone.userData.engageResizePosition;
-        // const disengagePosition = new THREE.Vector3();
-        // resizeHandleClone.getWorldPosition(disengagePosition);
-        // const distance = engagePosition.distanceTo(disengagePosition);
-        // console.log(distance);
-        // controller.remove(resizeHandleClone);
+    fluidResize() {
+        if (
+            !this.resizeHandleClone ||
+            !this.resizeHandleClone.userData.engageResizePosition
+        ) {
+            return;
+        }
 
-        const resizeHandle = controller.getObjectByName("resizeHandle");
-        console.log(resizeHandle);
-        const engagePosition = resizeHandle.userData.engageResizePosition;
-        const disengagePosition = new THREE.Vector3();
-        resizeHandle.getWorldPosition(disengagePosition);
+        const engagePosition = this.resizeHandleClone.userData
+            .engageResizePosition;
+        const currPosition = new THREE.Vector3();
+        this.resizeHandleClone.getWorldPosition(currPosition);
         // absolute euclidean distance
-        const distance = engagePosition.distanceTo(disengagePosition);
+        const distanceEtoCurr = engagePosition.distanceTo(currPosition);
 
-        // use distance to scale layer proportionally, on each render (fluid resizing)
-        console.log(distance);
+        const handleLeftPosition = new THREE.Vector3();
+        const handleRightPosition = new THREE.Vector3();
+        this.handleLeftPoint.getWorldPosition(handleLeftPosition);
+        this.handleRightPoint.getWorldPosition(handleRightPosition);
 
-        controller.remove(resizeHandle);
+        // console.log("handle left", handleLeftPosition);
+        // console.log("handle right", handleRightPosition);
+        // console.log("curr position", currPosition);
+
+        const distanceLtoCurr = handleLeftPosition.distanceTo(currPosition);
+        const distanceRtoCurr = handleRightPosition.distanceTo(currPosition);
+        // console.log("dist to left", distanceLtoCurr);
+        // console.log("dist to right", distanceRtoCurr);
+        // console.log(distanceRtoCurr < distanceLtoCurr ? "expand" : "compress");
+        const sign = distanceRtoCurr < distanceLtoCurr ? 1 : -1;
+
+        const resizeFactor =
+            1 + (sign * distanceEtoCurr * 0.01) / this.layer.width;
+
+        // hack
+        if (this.layer.width <= MIN_LAYER_WIDTH) {
+            this.layer.width *= 1.001;
+            this.layer.height *= 1.001;
+        } else if (this.layer.width >= MAX_LAYER_WIDTH) {
+            this.layer.width *= 0.999;
+            this.layer.height *= 0.999;
+        } else {
+            this.layer.width *= resizeFactor;
+            this.layer.height *= resizeFactor;
+        }
+    }
+
+    disengageResize(controller) {
+        this.resizeHandleClone.userData.engageResizePosition = null;
+        controller.remove(this.resizeHandleClone);
     }
 
     /**

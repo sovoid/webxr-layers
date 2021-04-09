@@ -77,12 +77,4 @@ export default class GlassLayer {
             this.layer.transform.orientation
         );
     }
-
-    attach(controller) {
-        controller.attach(this.glassObject);
-    }
-
-    detach(controller) {
-        controller.remove(this.glassObject);
-    }
 }

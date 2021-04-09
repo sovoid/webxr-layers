@@ -320,7 +320,19 @@ class App {
         this.mediaLayers.forEach((layerObj, layerKey) => {
             if (controller.userData.engagedMove && layerObj.glassLayer) {
                 layerObj.glassLayer.move();
-                layerObj.glassLayer.detach(controller);
+                controller.remove(layerObj.glass);
+            }
+            if (
+                layerObj.glassLayer &&
+                controller.userData.engagedResize &&
+                layerObj
+            ) {
+                layerObj.toolbar.disengageResize(controller);
+                controller.userData.engagedResize = false;
+            }
+            if (controller.userData.engagedResize && layerObj) {
+                layerObj.toolbar.disengageResize(controller);
+                controller.userData.engagedResize = false;
             }
             if (controller.userData.engagedResize && layerObj) {
                 layerObj.toolbar.disengageResize(controller);
@@ -365,7 +377,7 @@ class App {
             if (intersections[0].object === layerObj.glassLayer.object) {
                 console.log("move engaged");
                 controller.userData.engagedMove = true;
-                layerObj.glassLayer.attach(controller);
+                controller.attach(layerObj.glass);
             } else if (
                 intersections[0].object === layerObj.toolbar.resizeHandle
             ) {
