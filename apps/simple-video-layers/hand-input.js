@@ -1,19 +1,16 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
+import { XRHandModelFactory } from "three/examples/jsm/webxr/XRHandModelFactory";
 
+import panoVideo from "../../media/pano.mp4";
 import buttonClickSound from "../../media/audio/button-click.mp3";
 import MediaLayerManager from "../../util/webxr/MediaLayerManager";
 import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 
-const SLOTH_TOP_BOTTOM_VIDEO =
-    "https://d25a56pc18k0co.cloudfront.net/sloths_binaural_3840x2160_360_3D_v2_injected.mp4";
-const SLOTH_LEFT_RIGHT_VIDEO =
-    "https://d25a56pc18k0co.cloudfront.net/sloths_binaural_3840_180_3D-injected.mp4";
-
 class App {
-    constructor(videoIn = SLOTH_TOP_BOTTOM_VIDEO) {
+    constructor(videoIn = panoVideo) {
         const container = document.createElement("div");
         document.body.appendChild(container);
 
@@ -37,10 +34,9 @@ class App {
         this.mediaLayers = new Map();
 
         // Create Map of Videos for Each Layer
-        this.videos = this.createVideos({
-            equirect: videoIn,
-            quad: videoIn,
-        });
+        this.videos = this.createVideos({ equirect: videoIn, quad: videoIn });
+
+        this.controllers = [];
 
         this.setupVR();
 
@@ -65,6 +61,7 @@ class App {
         this.displayIntersectPoints();
 
         let areVideosReady = true;
+
         for (const video of this.videos.values()) {
             if (video.readyState !== 4) {
                 areVideosReady = false;
@@ -121,8 +118,8 @@ class App {
                     layout: "stereo-top-bottom",
                     transform: new XRRigidTransform({
                         x: 0.0,
-                        y: 1.3,
-                        z: -2.75,
+                        y: 1.7,
+                        z: -1.75,
                         w: 1.0,
                     }),
                 },
@@ -153,8 +150,9 @@ class App {
      */
     buildControllers() {
         const controllerModelFactory = new XRControllerModelFactory();
-
-        const controllers = [];
+        const handModelFactory = new XRHandModelFactory().setPath(
+            "../../util/models/fbx/"
+        );
 
         const invisibleRay = this.buildInvisibleRay();
         const ray = this.buildRay();
@@ -176,8 +174,19 @@ class App {
             this.handleSelectEnd(controller);
         };
 
-        const onDisconnect = () => {
+        const onConnect = (event) => {
+            console.log("controller connected");
+            const controller = event.target;
+
+            this.controllers.push(controller);
+        };
+
+        const onDisconnect = (event) => {
+            console.log("controller disconnected");
+            const controller = event.target;
+
             this.scene.remove(this.toolbarGroup);
+            this.controllers.filter((c) => c !== controller);
         };
 
         for (let i = 0; i <= 1; i++) {
@@ -189,19 +198,26 @@ class App {
 
             controller.addEventListener("selectstart", onSelectStart);
             controller.addEventListener("selectend", onSelectEnd);
+            controller.addEventListener("connected", onConnect);
             controller.addEventListener("disconnected", onDisconnect);
 
-            controllers.push(controller);
+            // this.controllers.push(controller);
 
+            // Objects
+            // Controller Grip
             const grip = this.renderer.xr.getControllerGrip(i);
             const controllerModel = controllerModelFactory.createControllerModel(
                 grip
             );
             grip.add(controllerModel);
             this.scene.add(grip);
-        }
 
-        return controllers;
+            // Hand
+            const hand = this.renderer.xr.getHand(i);
+            const handModel = handModelFactory.createHandModel(hand, "oculus");
+            hand.add(handModel);
+            this.scene.add(hand);
+        }
     }
 
     buildInvisibleRay() {
@@ -209,6 +225,7 @@ class App {
             new THREE.Vector3(0, 0, 0),
             new THREE.Vector3(0, 0, -1),
         ]);
+
         const mesh = new THREE.LineBasicMaterial({
             transparent: true,
             opacity: 0.0,
@@ -293,9 +310,6 @@ class App {
     createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
-        video.crossOrigin = "anonymous";
-        video.preload = "auto";
-        video.autoload = true;
         video.src = videoIn;
 
         video.onloadedmetadata = () => {
@@ -380,6 +394,7 @@ class App {
 
     getObjectsIntersections(controller, objects) {
         const worldMatrix = new THREE.Matrix4();
+        console.log(controller);
         worldMatrix.identity().extractRotation(controller.matrixWorld);
 
         this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
@@ -416,16 +431,16 @@ class App {
             if (areAllToolbarsHidden) {
                 this.scene.remove(
                     this.scene.getObjectByName(
-                        `${controller.uuid} intersectPoint`
+                        `${controller.uuid}intersectPoint`
                     )
                 );
             } else if (intersections.length > 0) {
                 const intersectPoint =
                     this.scene.getObjectByName(
-                        `${controller.uuid} intersectPoint`
+                        `${controller.uuid}intersectPoint`
                     ) ||
                     this.createIntersectPoint(
-                        `${controller.uuid} intersectPoint`,
+                        `${controller.uuid}intersectPoint`,
                         intersections[0]
                     );
 
@@ -442,10 +457,9 @@ class App {
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = {};
         }
-        
-        for(const layerKey of this.mediaLayers.keys()) {
+        this.mediaLayers.forEach((_layerObj, layerKey) => {
             this.scene.userData.isToolbarVisible[layerKey] = false;
-        }
+        });
     }
 
     /**
@@ -463,11 +477,11 @@ class App {
     setupVR() {
         this.renderer.xr.enabled = true;
 
-        this.controllers = this.buildControllers();
+        this.buildControllers();
 
         const vrButton = new VRButton(this.renderer, {
             requiredFeatures: ["layers"],
-            optionalFeatures: ["local-floor", "bounded-floor"],
+            optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"],
         });
 
         document.body.appendChild(vrButton.domElement);

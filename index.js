@@ -1,6 +1,6 @@
 import {
     ControllerInteraction,
-    EquirectButtons,
+    HandInput,
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
         case "/controller-interaction":
             app = new ControllerInteraction();
             break;
+        case "/hand-input":
+            app = new HandInput();
+            break;
         case "/simple-scene":
             app = new SimpleScene();
             break;
@@ -21,9 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/multiple-layers":
             app = new MultipleLayers();
-            break;
-        case "/equirect-buttons":
-            app = new EquirectButtons();
             break;
         default:
             const indexContainer = document.querySelector(".container");
