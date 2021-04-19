@@ -34,7 +34,7 @@ class App {
         this.mediaLayers = new Map();
 
         // Create Map of Videos for Each Layer
-        this.videos = this.createVideos({ equirect: videoIn, quad: videoIn });
+        this.videos = this.createVideos({ quad: videoIn });
 
         this.controllers = [];
 
@@ -78,31 +78,31 @@ class App {
             session.hasMediaLayer = true;
             const mediaFactory = new MediaLayerManager(session, this.renderer);
 
-            const uiConfigEquirect = {
-                panelWidth: 2,
-                panelHeight: 0.5,
-                height: 128,
-                position: { x: 0, y: -1, z: -3 },
-            };
+            // const uiConfigEquirect = {
+            //     panelWidth: 2,
+            //     panelHeight: 0.5,
+            //     height: 128,
+            //     position: { x: 0, y: -1, z: -3 },
+            // };
 
-            const toolbarGroupConfig = {
-                rotateXAngle: -Math.PI / 4,
-                position: {
-                    x: 0,
-                    y: 1.6,
-                    z: -2,
-                },
-            };
+            // const toolbarGroupConfig = {
+            //     rotateXAngle: -Math.PI / 4,
+            //     position: {
+            //         x: 0,
+            //         y: 1.6,
+            //         z: -2,
+            //     },
+            // };
 
-            const equirect = await mediaFactory.createMediaLayer(
-                this.videos.get("equirect"),
-                MediaLayerManager.EQUIRECT_LAYER,
-                {
-                    layout: "stereo-top-bottom",
-                },
-                uiConfigEquirect,
-                toolbarGroupConfig
-            );
+            // const equirect = await mediaFactory.createMediaLayer(
+            //     this.videos.get("equirect"),
+            //     MediaLayerManager.EQUIRECT_LAYER,
+            //     {
+            //         layout: "stereo-top-bottom",
+            //     },
+            //     uiConfigEquirect,
+            //     toolbarGroupConfig
+            // );
 
             const uiConfigQuad = {
                 panelWidth: 1,
@@ -126,18 +126,14 @@ class App {
                 uiConfigQuad
             );
 
-            this.mediaLayers.set("equirect", equirect);
+            // this.mediaLayers.set("equirect", equirect);
             this.mediaLayers.set("quad", quad);
 
             // Hide toolbars initially
             this.hideToolbars();
 
             session.updateRenderState({
-                layers: [
-                    equirect.layer,
-                    quad.layer,
-                    session.renderState.layers[0],
-                ],
+                layers: [quad.layer, session.renderState.layers[0]],
             });
             this.videos.forEach((video) => video.play());
         }
@@ -214,7 +210,7 @@ class App {
 
             // Hand
             const hand = this.renderer.xr.getHand(i);
-            const handModel = handModelFactory.createHandModel(hand, "oculus");
+            const handModel = handModelFactory.createHandModel(hand, "spheres");
             hand.add(handModel);
             this.scene.add(hand);
         }
@@ -303,6 +299,8 @@ class App {
      */
     createScene() {
         const scene = new THREE.Scene();
+        const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+        scene.add(light);
 
         return scene;
     }
@@ -394,7 +392,6 @@ class App {
 
     getObjectsIntersections(controller, objects) {
         const worldMatrix = new THREE.Matrix4();
-        console.log(controller);
         worldMatrix.identity().extractRotation(controller.matrixWorld);
 
         this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);

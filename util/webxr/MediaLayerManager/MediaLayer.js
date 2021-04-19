@@ -2,10 +2,9 @@ import GlassLayer from "./GlassLayer";
 import Toolbar from "../Toolbar";
 
 export default class MediaLayer {
-    constructor(layer, video, session, renderer, uiConfig, toolbarGroupConfig) {
+    constructor(layer, video, renderer, uiConfig, toolbarGroupConfig) {
         this.layer = layer;
         this.video = video;
-        this.session = session;
         this.renderer = renderer;
 
         this.glassLayer =
