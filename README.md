@@ -4,15 +4,6 @@ Composition of WebXR layers has [significant benefits](https://www.w3.org/TR/web
 
 This project is a product of an [Major League Hacking (MLH) Spring 2021 Fellowship](https://developers.facebook.com/blog/post/2021/03/31/facebook-open-source-introduces-mlh-fellowship-class-spring-2021/) open source contribution.
 
-<details>
-  <summary>Table of Contents</summary>
-
-  # Contents
-
-  [toc]
-
-</details>
-
 # Design
 
 This section provides a general overview of the application and a high-level explanation of how it works. The web application consists of several samples, each meant to showcase a particular feature. However, `multiple-layers.js` can be considered to be the most complex sample that is meant to show:
