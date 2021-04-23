@@ -4,15 +4,16 @@ Composition of WebXR layers has [significant benefits](https://www.w3.org/TR/web
 
 This project is a product of an [Major League Hacking (MLH) Spring 2021 Fellowship](https://developers.facebook.com/blog/post/2021/03/31/facebook-open-source-introduces-mlh-fellowship-class-spring-2021/) open source contribution.
 
-# Design
+## Design
 
 This section provides a general overview of the application and a high-level explanation of how it works. The web application consists of several samples, each meant to showcase a particular feature. However, `multiple-layers.js` can be considered to be the most complex sample that is meant to show:
+
 - Rendering multiple video layers of multiple types (e.g. equirect, quad)
-	- Independent playback
+  - Independent playback
 - Interacting with individual video layers
-	- Playback controls
-	- Moving quad layers
-	- Resizing quad layers
+  - Playback controls
+  - Moving quad layers
+  - Resizing quad layers
 
 The following is a screenshot of one of the `multiple-layers` sample.
 
@@ -23,27 +24,29 @@ SCREENSHOT HERE (`multiple-layers.js`) WITH LABELS
 ![Architecture.png](./static/Architecture.png)
 
 This diagram shows a high-level overview of a particular sample. This sample has two media layers: one equirectangular layer and one quadrilateral layer. Breaking the diagram in two four main components:
+
 1. `multiple-layers` is the application and the "driver"
 2. The two `THREE` libraries are meant to indicate that the application uses Three.js to render the 3D scene and all 3D objects
 3. `MediaLayerManager` handles creation of media layers
 4. Interactive Media Layer group made up of smaller components
-	- `MediaLayer` is the main media layer interface
-	- `GlassLayer` is implementation detail for moving layers
-	- `Toolbar` handles playback controls, resizing layers, and all other interactions
+   - `MediaLayer` is the main media layer interface
+   - `GlassLayer` is implementation detail for moving layers
+   - `Toolbar` handles playback controls, resizing layers, and all other interactions
 
 Crucially, the driver program contains a map of `MediaLayer` objects. This map is used to dynamically manage multiple media layers—rendering and detecting intersections with multiple `Toolbar` and `GlassLayer` objects under the hood. This, together with a parallel map of `video`s, make up the interface to create multiple `XRMediaLayer`s.
 
-## User Interface
+### User Interface
 
 ![UI.png](./static/UI.png)
 
 TODO
 
-# Implementation
+## Implementation
 
-## General Challenges
+### General Challenges
 
 Some of the key challenges faced in this project were:
+
 1. Relatively new and changing [documentation](https://www.w3.org/TR/webxrlayers-1/); first public draft released Dec 3 2020
 2. No prior experience in WebXR and 3D development
 3. Inability to interact directly with WebXR media layers via raycasting
@@ -52,13 +55,13 @@ Challenge 3 was a significant initial hurdle because we were not yet used to int
 
 Challenge 1 was perhaps the most significant because some of the most stumbling bugs we faced were related to outdated Three.js WebXR layer interfaces. Because we primarily used Three.js as our 3D development interface, and its `WebXRManager`, `VRButton`, and `WebGLRenderer` interfaces, important changes to these interfaces for media layers had to be made for them to be useable in our application. A PR was made to the Three.js library by WebXR Layers maintainer Rik, but because it had not been merged, we had to implement those changes ourselves for the purposes of this project.
 
-## `WebXRManager`, `VRButton`, `WebGLRenderer`
+### `WebXRManager`, `VRButton`, `WebGLRenderer`
 
 This section will highlight the important changes we made to the three files `WebXRManager`, `VRButton`, and `WebGLRenderer` from the Three.js [base](https://github.com/mrdoob/three.js/tree/dev/src/renderers) and [examples](https://github.com/mrdoob/three.js/tree/dev/examples/jsm/webxr) libraries.
 
 These changes reference Rik's PR ([mrdoob/three.js#20696](https://github.com/mrdoob/three.js/pull/20696)) made to Three.js in Nov 2020.
 
-### `WebXRManager.js`
+#### `WebXRManager.js`
 
 ```diff
 --- a/node_modules/three/src/renderers/webxr/WebXRManager.js
@@ -157,7 +160,7 @@ if (pose !== null) {
 
 The main changes here are in accounting for `if (session.renderState.layers === undefined)`. Essentially, if the session does not already have a base projection layer, create a `XRWebGLLayer` as the base layer. Otherwise, create and add an `XRProjectionLayer` to the `renderState`'s `layers` array.
 
-### `VRButton.js`
+#### `VRButton.js`
 
 ```diff
 --- a/node_modules/three/examples/jsm/webxr/VRButton.js
@@ -176,7 +179,7 @@ The `sessionInit` object is intended to be an object that has a `requiredFeature
 const sessionInit = { requiredFeatures: [ 'layers' ], optionalFeatures: [ 'local-floor' ] }
 ```
 
-### `WebGLRenderer.js`
+#### `WebGLRenderer.js`
 
 ```diff
 --- a/node_modules/three/src/renderers/WebGLRenderer.js
@@ -189,7 +192,7 @@ const sessionInit = { requiredFeatures: [ 'layers' ], optionalFeatures: [ 'local
 
 In this file we simply changed the `WebXRManager` import to use the above altered `WebXRManager.js`.
 
-## Creating Video Layers
+### Creating Video Layers
 
 This section explains the approach taken to create video layers with basic playback controls.
 
@@ -200,6 +203,7 @@ This class diagram outlines the process of creating video layers. The driver `Ap
 A `MediaLayer` object comprises the `layer` object that is of type [`XRMediaLayer`](https://www.w3.org/TR/webxrlayers-1/#videolayer). A `MediaLayer` object is also coupled with a corresponding `GlassLayer` and `Toolbar`. The former is used solely in the implementation of moving layers. The latter handles all other interactions with the media layer, including playback controls, fixed resizing, and fluid resizing.
 
 Suppose we have an empty `medialayers` map but a `videos` map with a video src for an intended quad layer, like so:
+
 - `mediaLayers: {}`
 - `videos: {"quad": "path_to_quad_video.mp4"}`
 
@@ -247,13 +251,14 @@ render() {
 }
 ```
 
-## Toolbar Interactions
+### Toolbar Interactions
 
 ![Toolbar](./static/toolbar.png)
 
 There are four main toolbar interactions, corresponding to video playback controls, excluding fixed and fluid resizing, which will be discussed in the [resizing section](#resizing-video-layers).
 
 These four playback controls are:
+
 1. Play/Pause
 2. Rewind 15s Backwards/Skip 15s Forward
 3. Restart
@@ -261,19 +266,19 @@ These four playback controls are:
 
 TODO: Briefly explain implementation
 
-## Moving Video Layers
+### Moving Video Layers
 
 ![moving-controller.gif](./static/moving-controller.gif)
 
 When the controller ray intersects the video layer, a Three.js rectangular object, the `glass` object, is attached to the controller's ray. Then moving the controller moves the `glassLayer`, which updates the `XRMediaQuadLayer`'s position using Three.js's `getWorldPosition()` and `getWorldQuaternion()` methods. The `glassLayer` is then recreated at exactly the new position of the `XRMediaQuadLayer`.
 
-## Resizing Video Layers
+### Resizing Video Layers
 
 ![resizing-fixed.gif](./static/resizing-fixed.gif)
 
 `C` (for "compress") negatively scales the `XRMediaQuadLayer`'s `height` and `width` attributes by a fixed factor of `1.25`, i.e. `height /= 1.25; width /= 1.25`. Similarly, `E` (for "expand") positively scales `height` and `width` by a fixed factor of `1.25`, i.e. `height *= 1.25; width *= 1.25`.
 
-### Challenges with Fluid Resizing
+#### Challenges with Fluid Resizing
 
 ![resizing-fluid.gif](./static/resizing-fluid.gif)
 
@@ -281,13 +286,14 @@ Our intentions are to somewhat heed Oculus' [hand interactions best practices](h
 
 TODO: Briefly explain fluid resizing implementation and challenges faced
 
-## Working with Hands
+### Working with Hands
 
 ![moving-controller.gif](./static/moving-controller.gif)
 
 ![moving-hand.gif](./static/moving-hand.gif)
 
 In this application, hands are simply an extension of controllers. Think of a controller as being composed of two parts:
+
 1. A target ray space (`controller`) which contains all the metadata of the controller
 	- e.g. 3D position and orientation, pointing ray, etc.
 2. A controller texture model (`grip`) that is the rendered appearance of the controller
@@ -348,11 +354,12 @@ for (let i = 0; i <= 1; i++) {
 ```
 
 This way, our hand comprises:
+
 1. The **same** target ray space (`controller`) which contains all the metadata of the controller
-	- e.g. 3D position and orientation, pointing ray, etc.
+   - e.g. 3D position and orientation, pointing ray, etc.
 2. A hand texture model (`hand`) that is the rendered appearance of the controller
 
-### Challenges with Hands Interactions
+#### Challenges with Hands Interactions
 
 Being able to work with hands simply by adding code for rendering the hand textures allowed us to be able to skip having to write code to handle the intricate details of working with [skeleton joints](https://www.w3.org/TR/webxr-hand-input-1/#skeleton-joints-section). For our purposes at least, we hadn't needed to implement near-field hand interactions because we were primarily interacting with video layers which are not meant to be viewed at point-blank range.
 
@@ -360,7 +367,7 @@ Naturally, the idea is to use the same `controller` target ray space to cast ray
 
 However, at this time the target ray space of `controller` was not available to the `hand` object due to an implementation detail in Three.js's `WebXRController.js`. This caused bugs like not being able to detect intersections with objects because the target ray was simply not applied when `hand` objects were active.
 
-### `WebXRController`
+#### `WebXRController`
 
 Thankfully, Rik's colleague Felix made a change to Three.js's `WebXRController.js` that made the `controller` target ray available in hands mode:
 
@@ -403,10 +410,10 @@ This change shifts the `targetRay` and `inputPose` transformations and calculati
 
 These changes have been applied to Three.js `r127`. Because our project is on Three.js `r125`, we implemented these changes by overriding Three.js's `WebXRController.js` with our own, for the time being.
 
-# Glossary
+## Glossary
 
 TODO
 
-# Instructions for Manual Testing
+## Instructions for Manual Testing
 
 TODO
