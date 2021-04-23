@@ -2,12 +2,14 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
-import panoVideo from "../../media/pano.mp4";
 import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 
+const SLOTH_TOP_BOTTOM_VIDEO =
+    "https://d25a56pc18k0co.cloudfront.net/sloths_binaural_3840x2160_360_3D_v2_injected.mp4";
+
 class App {
-    constructor(videoIn = panoVideo) {
+    constructor(videoIn = SLOTH_TOP_BOTTOM_VIDEO) {
         const container = document.createElement("div");
         document.body.appendChild(container);
 
@@ -178,7 +180,14 @@ class App {
     createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
+        video.crossOrigin = "anonymous";
+        video.preload = "auto";
+        video.autoload = true;
         video.src = videoIn;
+
+        video.onloadedmetadata = () => {
+            console.log("Video loaded");
+        };
 
         return video;
     }

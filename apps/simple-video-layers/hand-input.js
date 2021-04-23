@@ -3,14 +3,16 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 import { XRHandModelFactory } from "three/examples/jsm/webxr/XRHandModelFactory";
 
-import panoVideo from "../../media/pano.mp4";
 import buttonClickSound from "../../media/audio/button-click.mp3";
 import MediaLayerManager from "../../util/webxr/MediaLayerManager";
 import { WebGLRenderer } from "../../util/WebGLRenderer";
 import { VRButton } from "../../util/webxr/VRButton";
 
+const BUNNY_VIDEO =
+    "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4";
+
 class App {
-    constructor(videoIn = panoVideo) {
+    constructor(videoIn = BUNNY_VIDEO) {
         const container = document.createElement("div");
         document.body.appendChild(container);
 
@@ -34,7 +36,7 @@ class App {
         this.mediaLayers = new Map();
 
         // Create Map of Videos for Each Layer
-        this.videos = this.createVideos({ equirect: videoIn, quad: videoIn });
+        this.videos = this.createVideos({ quad: videoIn });
 
         this.controllers = [];
 
@@ -78,32 +80,6 @@ class App {
             session.hasMediaLayer = true;
             const mediaFactory = new MediaLayerManager(session, this.renderer);
 
-            const uiConfigEquirect = {
-                panelWidth: 2,
-                panelHeight: 0.5,
-                height: 128,
-                position: { x: 0, y: -1, z: -3 },
-            };
-
-            const toolbarGroupConfig = {
-                rotateXAngle: -Math.PI / 4,
-                position: {
-                    x: 0,
-                    y: 1.6,
-                    z: -2,
-                },
-            };
-
-            const equirect = await mediaFactory.createMediaLayer(
-                this.videos.get("equirect"),
-                MediaLayerManager.EQUIRECT_LAYER,
-                {
-                    layout: "stereo-top-bottom",
-                },
-                uiConfigEquirect,
-                toolbarGroupConfig
-            );
-
             const uiConfigQuad = {
                 panelWidth: 1,
                 panelHeight: 0.2,
@@ -116,6 +92,8 @@ class App {
                 MediaLayerManager.QUAD_LAYER,
                 {
                     layout: "stereo-top-bottom",
+                    width: 1.0,
+                    height: 0.5625,
                     transform: new XRRigidTransform({
                         x: 0.0,
                         y: 1.7,
@@ -126,18 +104,14 @@ class App {
                 uiConfigQuad
             );
 
-            this.mediaLayers.set("equirect", equirect);
+            // this.mediaLayers.set("equirect", equirect);
             this.mediaLayers.set("quad", quad);
 
             // Hide toolbars initially
             this.hideToolbars();
 
             session.updateRenderState({
-                layers: [
-                    equirect.layer,
-                    quad.layer,
-                    session.renderState.layers[0],
-                ],
+                layers: [quad.layer, session.renderState.layers[0]],
             });
             this.videos.forEach((video) => video.play());
         }
@@ -214,7 +188,7 @@ class App {
 
             // Hand
             const hand = this.renderer.xr.getHand(i);
-            const handModel = handModelFactory.createHandModel(hand, "oculus");
+            const handModel = handModelFactory.createHandModel(hand, "spheres");
             hand.add(handModel);
             this.scene.add(hand);
         }
@@ -303,6 +277,8 @@ class App {
      */
     createScene() {
         const scene = new THREE.Scene();
+        const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+        scene.add(light);
 
         return scene;
     }
@@ -310,6 +286,9 @@ class App {
     createVideo(videoIn) {
         const video = document.createElement("video");
         video.loop = true;
+        video.crossOrigin = "anonymous";
+        video.preload = "auto";
+        video.autoload = true;
         video.src = videoIn;
 
         video.onloadedmetadata = () => {
@@ -394,7 +373,6 @@ class App {
 
     getObjectsIntersections(controller, objects) {
         const worldMatrix = new THREE.Matrix4();
-        console.log(controller);
         worldMatrix.identity().extractRotation(controller.matrixWorld);
 
         this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);

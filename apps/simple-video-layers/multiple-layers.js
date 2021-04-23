@@ -11,6 +11,8 @@ const SLOTH_TOP_BOTTOM_VIDEO =
     "https://d25a56pc18k0co.cloudfront.net/sloths_binaural_3840x2160_360_3D_v2_injected.mp4";
 const SLOTH_LEFT_RIGHT_VIDEO =
     "https://d25a56pc18k0co.cloudfront.net/sloths_binaural_3840_180_3D-injected.mp4";
+const BUNNY_VIDEO =
+    "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4";
 
 class App {
     constructor(videoIn = SLOTH_TOP_BOTTOM_VIDEO) {
@@ -39,7 +41,7 @@ class App {
         // Create Map of Videos for Each Layer
         this.videos = this.createVideos({
             equirect: videoIn,
-            quad: videoIn,
+            quad: BUNNY_VIDEO,
         });
 
         this.setupVR();
@@ -119,6 +121,8 @@ class App {
                 MediaLayerManager.QUAD_LAYER,
                 {
                     layout: "stereo-top-bottom",
+                    width: 1.0,
+                    height: 0.5625,
                     transform: new XRRigidTransform({
                         x: 0.0,
                         y: 1.3,
@@ -442,8 +446,8 @@ class App {
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = {};
         }
-        
-        for(const layerKey of this.mediaLayers.keys()) {
+
+        for (const layerKey of this.mediaLayers.keys()) {
             this.scene.userData.isToolbarVisible[layerKey] = false;
         }
     }
