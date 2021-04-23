@@ -15,7 +15,7 @@ This section provides a general overview of the application and a high-level exp
   - Moving quad layers
   - Resizing quad layers
 
-The following is a screenshot of one of the `multiple-layers` sample.
+The following is a screenshot of the `multiple-layers` sample.
 
 SCREENSHOT HERE (`multiple-layers.js`) WITH LABELS
 
@@ -23,9 +23,9 @@ SCREENSHOT HERE (`multiple-layers.js`) WITH LABELS
 
 ![Architecture.png](./static/Architecture.png)
 
-This diagram shows a high-level overview of a particular sample. This sample has two media layers: one equirectangular layer and one quadrilateral layer. Breaking the diagram in two four main components:
+This diagram shows a high-level overview of a particular sample. This sample has two media layers: one equirectangular layer and one quadrilateral layer. Breaking the diagram into four main components:
 
-1. `multiple-layers` is the application and the "driver"
+1. `multiple-layers` is the application sample and the "driver"
 2. The two `THREE` libraries are meant to indicate that the application uses Three.js to render the 3D scene and all 3D objects
 3. `MediaLayerManager` handles creation of media layers
 4. Interactive Media Layer group made up of smaller components
@@ -33,7 +33,7 @@ This diagram shows a high-level overview of a particular sample. This sample has
    - `GlassLayer` is implementation detail for moving layers
    - `Toolbar` handles playback controls, resizing layers, and all other interactions
 
-Crucially, the driver program contains a map of `MediaLayer` objects. This map is used to dynamically manage multiple media layers—rendering and detecting intersections with multiple `Toolbar` and `GlassLayer` objects under the hood. This, together with a parallel map of `video`s, make up the interface to create multiple `XRMediaLayer`s.
+Crucially, the driver program contains a map of `MediaLayer` objects. This map is used to dynamically manage multiple media layers—rendering and detecting intersections with multiple `Toolbar` and `GlassLayer` objects under the hood. This, together with a parallel `videos` map, make up the interface to create multiple `XRMediaLayer`s.
 
 ### User Interface
 
