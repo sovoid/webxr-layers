@@ -328,9 +328,25 @@ class App {
 
     handleSelectEnd(controller) {
         this.mediaLayers.forEach((layerObj, layerKey) => {
-            if (layerObj.glassLayer) {
+            if (controller.userData.engagedMove && layerObj.glassLayer) {
                 layerObj.glassLayer.move();
                 controller.remove(layerObj.glass);
+            }
+            if (
+                layerObj.glassLayer &&
+                controller.userData.engagedResize &&
+                layerObj
+            ) {
+                layerObj.toolbar.disengageResize(controller);
+                controller.userData.engagedResize = false;
+            }
+            if (controller.userData.engagedResize && layerObj) {
+                layerObj.toolbar.disengageResize(controller);
+                controller.userData.engagedResize = false;
+            }
+            if (controller.userData.engagedResize && layerObj) {
+                layerObj.toolbar.disengageResize(controller);
+                controller.userData.engagedResize = false;
             }
         });
     }
@@ -347,18 +363,13 @@ class App {
                 this.scene.add(layerObj.toolbarGroup);
 
                 if (layerObj.glassLayer) {
-                    this.scene.add(layerObj.glass);
+                    this.scene.add(layerObj.glassLayer.object);
                 }
             } else {
                 this.handleToolbarIntersections(controller, {
                     layerKey,
                     layerObj,
                 });
-
-                // Handle moving of video layer
-                if (layerObj.glassLayer) {
-                    controller.attach(layerObj.glass);
-                }
             }
         });
     }
@@ -371,6 +382,19 @@ class App {
 
         if (intersections.length > 0) {
             layerObj.update(intersections);
+
+            // Handle moving of video layer
+            if (intersections[0].object === layerObj.glassLayer.object) {
+                console.log("move engaged");
+                controller.userData.engagedMove = true;
+                controller.attach(layerObj.glass);
+            } else if (
+                intersections[0].object === layerObj.toolbar.resizeHandle
+            ) {
+                console.log("resize engaged");
+                controller.userData.engagedResize = true;
+                layerObj.toolbar.engageResize(controller);
+            }
         } else {
             this.scene.userData.isToolbarVisible[layerKey] = false;
             this.scene.remove(layerObj.toolbarGroup);
@@ -442,8 +466,8 @@ class App {
         if (!this.scene.userData.isToolbarVisible) {
             this.scene.userData.isToolbarVisible = {};
         }
-        
-        for(const layerKey of this.mediaLayers.keys()) {
+
+        for (const layerKey of this.mediaLayers.keys()) {
             this.scene.userData.isToolbarVisible[layerKey] = false;
         }
     }

@@ -1,9 +1,9 @@
 import * as THREE from "three";
-
 export default class GlassLayer {
     constructor(layer, renderer) {
         this.layer = layer;
         this.renderer = renderer;
+
         this.glassObject = this.createGlassObject(this.layer);
     }
 
@@ -30,18 +30,29 @@ export default class GlassLayer {
         return glass;
     }
 
-    move({ x, y, z }) {
-        this.glassObject.position.set(x, y, z);
-        this.glassObject.position.needsUpdate = true;
+    updateDimensions({ width, height }) {
+        this.glassObject.scale.set(2 * width, 2 * height, 1);
     }
 
-    updatePosition() {
+    /**
+     * Updates position and quaternion of glass layer objects when quad video layer is moved
+     */
+    updateOrientation(position, quaternion) {
+        const { x, y, z } = position;
+        // update position x, y, z
+        this.glassObject.position.set(x, y, z);
+        // update quaternion (3d heading and orientation)
+        this.glassObject.quaternion.copy(quaternion);
+    }
+
+    /**
+     * Updates position and quaternion of media layer when glass layer is moved
+     */
+    updateLayerOrientation() {
         const position = new THREE.Vector3();
         const quaternion = new THREE.Quaternion();
-
         this.glassObject.getWorldPosition(position);
         this.glassObject.getWorldQuaternion(quaternion);
-
         const { x, y, z } = position;
         this.layer.transform = new XRRigidTransform(
             {
@@ -54,23 +65,9 @@ export default class GlassLayer {
         );
     }
 
-    updateDimensions({ width, height }) {
-        this.glassObject.scale.set(2 * width, 2 * height, 1);
-    }
-
-    /**
-     * Updates position and quaternion of glass layer when quad video layer is moved
-     */
-    updateOrientation(position, quaternion) {
-        // update position x, y, z
-        this.glassObject.position.set(position.x, position.y, position.z);
-        // update quaternion (3d heading and orientation)
-        this.glassObject.quaternion.copy(quaternion);
-    }
-
     updateOnRender() {
         this.updateDimensions(this.layer);
-        this.updatePosition();
+        this.updateLayerOrientation();
     }
 
     move() {

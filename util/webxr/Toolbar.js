@@ -1,6 +1,9 @@
 import * as THREE from "three";
 
 import { CanvasUI } from "../CanvasUI";
+const RESIZE_HANDLE_THICKNESS = 0.05;
+const MIN_LAYER_WIDTH = 0.5;
+const MAX_LAYER_WIDTH = 10;
 
 class Toolbar {
     constructor(layer, renderer, video, options) {
@@ -19,12 +22,30 @@ class Toolbar {
         // Progress Bar
         this.progressBar = this.createProgressBar();
 
+        // Resize Handle
+        this.resizeHandle = this.createResizeHandle();
+        this.resizeHandleClone = null;
+
         // Toolbar Group
         this.toolbarGroup = this.createToolbarGroup(toolbarGroupConfig);
     }
 
     get objects() {
-        return [this.ui.mesh, ...this.progressBar.children];
+        return [this.ui.mesh, ...this.progressBar.children, this.resizeHandle];
+    }
+
+    createResizeHandle() {
+        const handleGeometry = new THREE.PlaneGeometry(1, 1); // to scale
+        const handleMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+
+        // bottom handle
+        const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+        handle.scale.set(this.layer.width, RESIZE_HANDLE_THICKNESS, 1);
+        const { x, y, z } = this.ui.mesh.position;
+        handle.position.set(x, y - this.uiHeight, z);
+
+        handle.name = "resizeHandle";
+        return handle;
     }
 
     createProgressBar() {
@@ -53,6 +74,7 @@ class Toolbar {
         const toolbarGroup = new THREE.Group();
         toolbarGroup.add(this.ui.mesh);
         toolbarGroup.add(this.progressBar);
+        toolbarGroup.add(this.resizeHandle);
 
         const { x, y, z } = toolbarGroupConfig.position;
         toolbarGroup.position.set(x, y, z);
@@ -86,6 +108,16 @@ class Toolbar {
             this.ui.updateElement("pause", label);
         };
 
+        const onExpand = () => {
+            this.layer.width *= 1.25;
+            this.layer.height *= 1.25;
+        };
+
+        const onCompress = () => {
+            this.layer.width /= 1.25;
+            this.layer.height /= 1.25;
+        };
+
         const colors = {
             blue: {
                 light: "#1bf",
@@ -97,6 +129,7 @@ class Toolbar {
                 bright: "#ff0",
                 dark: "#bb0",
             },
+            black: "#000",
         };
 
         const config = {
@@ -117,7 +150,7 @@ class Toolbar {
             pause: {
                 type: "button",
                 position: { top: 35, left: 64 },
-                width: 128,
+                width: 96,
                 height: 52,
                 fontColor: colors.white,
                 backgroundColor: colors.red,
@@ -126,18 +159,38 @@ class Toolbar {
             },
             next: {
                 type: "button",
-                position: { top: 32, left: 192 },
+                position: { top: 32, left: 160 },
                 width: 64,
                 fontColor: colors.yellow.dark,
                 hover: colors.yellow.bright,
                 onSelect: () => onSkip(5),
             },
+            expand: {
+                type: "button",
+                position: { top: 35, right: 200 },
+                width: 32,
+                height: 52,
+                fontColor: colors.black,
+                backgroundColor: colors.blue.light,
+                hover: colors.blue.lighter,
+                onSelect: onExpand,
+            },
+            compress: {
+                type: "button",
+                position: { top: 35, right: 240 },
+                width: 32,
+                height: 52,
+                fontColor: colors.black,
+                backgroundColor: colors.blue.light,
+                hover: colors.blue.lighter,
+                onSelect: onCompress,
+            },
             restart: {
                 type: "button",
                 position: { top: 35, right: 10 },
-                width: 200,
+                width: 150,
                 height: 52,
-                fontColor: colors.white,
+                fontColor: colors.black,
                 backgroundColor: colors.blue.light,
                 hover: colors.blue.lighter,
                 onSelect: onRestart,
@@ -149,6 +202,8 @@ class Toolbar {
             prev: "<path>M 10 32 L 54 10 L 54 54 Z</path>",
             pause: "||",
             next: "<path>M 54 32 L 10 10 L 10 54 Z</path>",
+            expand: "E",
+            compress: "C",
             restart: "Restart",
         };
 
@@ -200,12 +255,16 @@ class Toolbar {
             this.updateProgressBar();
         }
 
+        this.updateResizeHandle();
+
         if (hasGlassLayer) {
             this.updateOrientation(
                 this.layer.transform.position,
                 this.layer.transform.orientation
             );
         }
+
+        this.fluidResize();
     }
 
     /**
@@ -223,6 +282,91 @@ class Toolbar {
 
         this.toolbarGroup.position.needsUpdate = true;
         this.toolbarGroup.quaternion.needsUpdate = true;
+    }
+
+    updateResizeHandle() {
+        this.resizeHandle.scale.set(
+            this.layer.width,
+            RESIZE_HANDLE_THICKNESS,
+            1
+        );
+    }
+
+    /**
+     * Store the resizeHandle's position at the moment of engaging fluid resizing.
+     * Currently uses the resizeHandle itself, but intend to use a transparent clone
+     * of the resizeHandle to handle the engage/disengage, while keeping the actual
+     * visible resizeHandle "fixed" at the same position as the layer is resized.
+     */
+    engageResize(controller) {
+        const { x, y, z } = this.resizeHandle.position;
+        const pointGeometry = new THREE.PlaneGeometry(0.1, 0.1);
+
+        this.handleLeftPoint = new THREE.Points(pointGeometry);
+        this.handleLeftPoint.position.set(x - this.layer.width / 2, y, z);
+        this.handleRightPoint = new THREE.Points(pointGeometry);
+        this.handleRightPoint.position.set(x + this.layer.width / 2, y, z);
+
+        this.resizeHandleClone = this.resizeHandle.clone();
+        this.resizeHandleClone.name = "resizeHandleClone";
+
+        const engagePosition = new THREE.Vector3();
+        // world position necessary
+        this.resizeHandleClone.getWorldPosition(engagePosition);
+        controller.attach(this.resizeHandleClone);
+        this.resizeHandleClone.userData.engageResizePosition = engagePosition;
+    }
+
+    fluidResize() {
+        if (
+            !this.resizeHandleClone ||
+            !this.resizeHandleClone.userData.engageResizePosition
+        ) {
+            return;
+        }
+
+        const engagePosition = this.resizeHandleClone.userData
+            .engageResizePosition;
+        const currPosition = new THREE.Vector3();
+        this.resizeHandleClone.getWorldPosition(currPosition);
+        // absolute euclidean distance
+        const distanceEtoCurr = engagePosition.distanceTo(currPosition);
+
+        const handleLeftPosition = new THREE.Vector3();
+        const handleRightPosition = new THREE.Vector3();
+        this.handleLeftPoint.getWorldPosition(handleLeftPosition);
+        this.handleRightPoint.getWorldPosition(handleRightPosition);
+
+        // console.log("handle left", handleLeftPosition);
+        // console.log("handle right", handleRightPosition);
+        // console.log("curr position", currPosition);
+
+        const distanceLtoCurr = handleLeftPosition.distanceTo(currPosition);
+        const distanceRtoCurr = handleRightPosition.distanceTo(currPosition);
+        // console.log("dist to left", distanceLtoCurr);
+        // console.log("dist to right", distanceRtoCurr);
+        // console.log(distanceRtoCurr < distanceLtoCurr ? "expand" : "compress");
+        const sign = distanceRtoCurr < distanceLtoCurr ? 1 : -1;
+
+        const resizeFactor =
+            1 + (sign * distanceEtoCurr * 0.01) / this.layer.width;
+
+        // hack
+        if (this.layer.width <= MIN_LAYER_WIDTH) {
+            this.layer.width *= 1.001;
+            this.layer.height *= 1.001;
+        } else if (this.layer.width >= MAX_LAYER_WIDTH) {
+            this.layer.width *= 0.999;
+            this.layer.height *= 0.999;
+        } else {
+            this.layer.width *= resizeFactor;
+            this.layer.height *= resizeFactor;
+        }
+    }
+
+    disengageResize(controller) {
+        this.resizeHandleClone.userData.engageResizePosition = null;
+        controller.remove(this.resizeHandleClone);
     }
 
     /**
