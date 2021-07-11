@@ -1,10 +1,22 @@
 # Development Setup: Oculus
 
+# Table of Content
+- Developer Account Set-up
+- Enabling Developer Mode for the Oculus Device
+- Development Environment Setup on the OS
+- Enabling Flags in the Oculus Browser
+- Running a local application in the Oculus Browser
+    - Network address `https://<ip>:port` 
+    - Localhost address `https://localhost:8080`
+- Debugging within the Oculus Browser
+- Oculus Developer Hub
+- Additional Resources
+
 ## Developer Account Set-up
 Before getting started, you would require a Facebook account and a corresponding [Oculus Developer Account](https://developer.oculus.com/)
 
 
-## Enabling Developer Mode
+## Enabling Developer Mode for the Oculus Device
 - Download the Oculus App and login using Facebook
 - Turn on the headset
 - Navigate to devices and select the device
@@ -17,7 +29,7 @@ Before getting started, you would require a Facebook account and a corresponding
     </tr>
 </table>
 
-## Development Environment Setup on your OS
+## Development Environment Setup on the OS
 - Connect the Oculus device to your machine via USC-C, and upon being prompted, [Enable Developer Mode](https://developer.oculus.com/documentation/native/android/mobile-device-setup/)
 
 - Install [ADB driver](https://developer.oculus.com/downloads/package/oculus-adb-drivers/) for your OS 
@@ -31,7 +43,7 @@ __For Windows__
 
 - If you cannot see this path `C:\Users\USERNAME\AppData\Local\Android\sdk\platform-tools` present, add it your environment variables either by using the command `setx PATH "%PATH%;C:\Program Files\android-sdk-windows\platform-tools"` or manually by navigating to environment variables and ammending the environment variable: *PATH*
 
- <img src="./assests/ADB_PathVar.PNG" style="border: 1px solid black; margin-left: 50px; height: 350px;"/>
+ <img src="./assests/ADB_PathVar.PNG" style="border: 1px solid black; margin-left: 50px; height: 300px;"/>
 
 - To check whether your device is connected correctly, use the command `adb devices`. If all is good and the device is detected, you should see the following output:
 
@@ -81,7 +93,7 @@ Additionally, if the steps so far do not result in the desired result, we might 
 <img src="./assests/insecureOrigins.PNG" style="border: 1px solid black"/> 
 - Reboot the browser, and access the URL again
 
-### 2.  Localhost address `https://localhost:8080`
+### 2. Localhost address `https://localhost:8080`
 
 To be able to access the local port of your machine on the oculus browser as is, we need to perform reverse port forwarding. Essentially, anytime we access a particular port on the oculus browser - we want to forward that to our local machine. `adb` has built-in support for port forwarding.
 
