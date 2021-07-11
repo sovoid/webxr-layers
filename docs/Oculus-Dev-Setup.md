@@ -59,22 +59,25 @@ In order to run a WebXR based application in the Oculus Browser, we need to esta
 
 - The application is now running on `https://localhost:8080` or on your network at `https://<ip>:port`
 
-### There are 3 ways to view the application running locally within your oculus browser, by accessing the following addresses:
+### __There are 2 ways to view the application running locally within your oculus browser, by accessing the following addresses:__
 
 
-####  1. Network address `https://<ip>:port` 
+###  1. Network address `https://<ip>:port` 
 Ensure that your oculus device and local machine are both connected to the same WiFi network, and that the oculus device is connected to your machine
 
 If prompted with the *your connection is not private* screen, click on *advanced* and then *proceed to _IP:PORT_ url*. This  should redirect you to the locally running application and allow you to interact with it.
 
-<table>
-    <tr>
-        <td> <img src="./assests/network_security.PNG" style="border: 1px solid black"/></td>
-        <td> <img src="./assests/network_address.PNG" style="border: 1px solid black"/> </td>
-    </tr>
-</table>
+<img src="./assests/network_security.PNG" style="border: 1px solid black; height: 200px; margin-left:50px;"/>
+<img src="./assests/ipaddress.PNG" style="border: 1px solid black"/> 
 
-#### 2.  Localhost address `https://localhost:8080`
+Additionally, if the steps so far do not result in the desired result, we might need to  by-pass the "https" requirement. For this,
+- Navigate to chrome://flags on the device
+- Search for `Insecure origins treated as secure`
+- Then enable it and add http://192.168.0.5:8080/ in the control attached to that setting. Ensure that you have entered the correct IP and port number
+<img src="./assests/insecureOrigins.PNG" style="border: 1px solid black"/> 
+- Reboot the browser, and access the URL again
+
+### 2.  Localhost address `https://localhost:8080`
 
 To be able to access the local port of your machine on the oculus browser as is, we need to perform reverse port forwarding. Essentially, anytime we access a particular port on the oculus browser - we want to forward that to our local machine. `adb` has built-in support for port forwarding.
 
@@ -83,10 +86,14 @@ Use the command `adb reverse tcp:PORT tcp:PORT`. Here, we want the port:8080 on 
 
 <img src="./assests/portforwarding.PNG" style="border: 1px solid black"/>
 
+Now, access  `https://localhost:8080` from within the oculus browser.  Ensure that the oculus device is connected to your machine.
 
+<img src="./assests/localhost8080.PNG" style="border: 1px solid black"/>
 
-####  3. Visit network address `http://<ip>:port` within your Oculus Browser 
-go to chrome://flags on the device, search for insecure and find Insecure origins treated as secure. Then enable it and add http://192.168.0.5:8000/ in the control attached to that setting. Then reboot the browser
+The application should be visible as shown above.
+
+## Debugging within the Oculus Browser
+
 
 
 ## Additional Resources
