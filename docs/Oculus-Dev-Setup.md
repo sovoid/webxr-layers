@@ -59,9 +59,10 @@ In order to run a WebXR based application in the Oculus Browser, we need to esta
 
 - The application is now running on `https://localhost:8080` or on your network at `https://<ip>:port`
 
-There are 3 ways to view the application running locally within your oculus browser:
+### There are 3 ways to view the application running locally within your oculus browser, by accessing the following addresses:
 
-###  1. Visit network address `https://<ip>:port` within your Oculus Browser 
+
+####  1. Network address `https://<ip>:port` 
 Ensure that your oculus device and local machine are both connected to the same WiFi network, and that the oculus device is connected to your machine
 
 If prompted with the *your connection is not private* screen, click on *advanced* and then *proceed to _IP:PORT_ url*. This  should redirect you to the locally running application and allow you to interact with it.
@@ -72,6 +73,20 @@ If prompted with the *your connection is not private* screen, click on *advanced
         <td> <img src="./assests/network_address.PNG" style="border: 1px solid black"/> </td>
     </tr>
 </table>
+
+#### 2.  Localhost address `https://localhost:8080`
+
+To be able to access the local port of your machine on the oculus browser as is, we need to perform reverse port forwarding. Essentially, anytime we access a particular port on the oculus browser - we want to forward that to our local machine. `adb` has built-in support for port forwarding.
+
+Use the command `adb reverse tcp:PORT tcp:PORT`. Here, we want the port:8080 on the Oculus Browser to be forwarded to port:8080 on our local machine. Hence, run the command as follows:
+`adb reverse tcp:8080 tcp:8080`
+
+<img src="./assests/portforwarding.PNG" style="border: 1px solid black"/>
+
+
+
+####  3. Visit network address `http://<ip>:port` within your Oculus Browser 
+go to chrome://flags on the device, search for insecure and find Insecure origins treated as secure. Then enable it and add http://192.168.0.5:8000/ in the control attached to that setting. Then reboot the browser
 
 
 ## Additional Resources
