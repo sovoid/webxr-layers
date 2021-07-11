@@ -1,6 +1,6 @@
 # Development Setup: Oculus
 
-# Table of Content
+## Table of Content
 - Developer Account Set-up
 - Enabling Developer Mode for the Oculus Device
 - Development Environment Setup on the OS
@@ -20,14 +20,9 @@ Before getting started, you would require a Facebook account and a corresponding
 - Download the Oculus App and login using Facebook
 - Turn on the headset
 - Navigate to devices and select the device
+<img src="./assests/OculusDeveloperMode.PNG" style="border: 1px solid black; height: 350px"/>
 - Click on 'Developer Mode' and enable it by toggling the switch
-
-<table>
-    <tr>
-        <td> <img src="./assests/OculusDeveloperMode.PNG" style="border: 1px solid black"/></td>
-        <td> <img src="./assests/EnableDevMode.PNG" style="border: 1px solid black"/> </td>
-    </tr>
-</table>
+<img src="./assests/EnableDevMode.PNG" style="border: 1px solid black"/>
 
 ## Development Environment Setup on the OS
 - Connect the Oculus device to your machine via USC-C, and upon being prompted, [Enable Developer Mode](https://developer.oculus.com/documentation/native/android/mobile-device-setup/)
