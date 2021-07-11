@@ -1,5 +1,9 @@
 # Development Setup: Oculus
 
+## Developer Account Set-up
+Before getting started, you would require a Facebook account and a corresponding [Oculus Developer Account](https://developer.oculus.com/)
+
+
 ## Enabling Developer Mode
 - Download the Oculus App and login using Facebook
 - Turn on the headset
@@ -73,7 +77,7 @@ If prompted with the *your connection is not private* screen, click on *advanced
 Additionally, if the steps so far do not result in the desired result, we might need to  by-pass the "https" requirement. For this,
 - Navigate to chrome://flags on the device
 - Search for `Insecure origins treated as secure`
-- Then enable it and add http://192.168.0.5:8080/ in the control attached to that setting. Ensure that you have entered the correct IP and port number
+- Then enable it and add http://192.168.1.110:8080/ in the control attached to that setting. Ensure that you have entered the correct IP and port number
 <img src="./assests/insecureOrigins.PNG" style="border: 1px solid black"/> 
 - Reboot the browser, and access the URL again
 
@@ -90,13 +94,31 @@ Now, access  `https://localhost:8080` from within the oculus browser.  Ensure th
 
 <img src="./assests/localhost8080.PNG" style="border: 1px solid black"/>
 
-The application should be visible as shown above.
+The application should be visible as shown above. These steps are required to be followed for each debugging session i.e. every time the device is disconnected and then re-connected
 
 ## Debugging within the Oculus Browser
+To debug the application running locally and accessible via the Oculus Browser, visit `chrome://inspect/#devices` on your machine browser
+
+Here you would be able to view all URLs currently active within the Oculus Browser
+
+<img src="./assests/inspect.PNG" style="border: 1px solid black"/>
+
+Click on the URL that you would like to debug
+
+<img src="./assests/inspectIP8080.PNG" style="border: 1px solid black"/>
+
+The developer tool and console here are in sycn with any interactions with the application within the Oculus Browser!
 
 
+## Oculus Developer Hub
+*For Windows*
+- Download [Oculus Developer Hub](https://developer.oculus.com/downloads/package/oculus-developer-hub-win/)
+- [Configure your device on ODH](https://developer.oculus.com/documentation/tools/odh/#connect-headset-to-odh)
+- [Oculus Developer Hub Debugging Tools](https://developer.oculus.com/documentation/tools/odh-media/)
 
 ## Additional Resources
 - [Oculus Developer Documentation](https://developer.oculus.com/develop/)
+- [Oculus Browser Remote Debugging](https://developer.oculus.com/documentation/oculus-browser/browser-remote-debugging/)
+- [Getting Started with Oculus Browser and Debugging](https://developer.oculus.com/webxr/)
 
 
