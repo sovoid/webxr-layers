@@ -36,6 +36,22 @@ __For Windows__
 -  [Enable Wifi Debugging](https://developer.oculus.com/documentation/oculus-browser/browser-remote-debugging/)
 
 
+## Enabling Flags in the Oculus Browser
+In order to run a WebXR based application in the Oculus Browser, we need to establish certain flags. Navigate to `chrome://flags/` and enable the following flags:
+
+    webxr-layers
+    webxr-hands
+    webxr-high-refresh-rate
+    enable-webxr-foveation-rendering
+    enable-webxr-ca-correction
+    webxr-navigation-permission
+    webxr-enforce-user-activation
+    webxr-frame-rate
+    
+<img src="./assests/oculus_flags.PNG" style="border: 1px solid black"/>
+<img src="./assests/oculus_flags2.PNG" style="border: 1px solid black"/>
+
+
 ## Additional Resources
 - [Oculus Developer Documentation](https://developer.oculus.com/develop/)
 
