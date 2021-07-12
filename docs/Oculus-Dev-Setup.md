@@ -1,6 +1,6 @@
 # Development Setup: Oculus
 
-## Table of Content
+## Table of Contents
 - Developer Account Set-up
 - Enabling Developer Mode for the Oculus Device
 - Development Environment Setup on the OS
