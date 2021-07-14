@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
             app = new MultipleLayers();
             break;
         case "/handModelSample":
-            app = new sandboxExample();
+            app = new HandModelSample();
             break;
         default:
             const indexContainer = document.querySelector(".container");
