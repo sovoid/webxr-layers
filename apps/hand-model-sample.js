@@ -19,6 +19,7 @@ class App{
         const material = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
 
         const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(0, 0.6, -1.5);
 
         this.scene.add(sphere)
 
@@ -29,7 +30,10 @@ class App{
             })
         );
 
-        this.scene.add(room)
+        room.geometry.translate(0,3,0);
+
+        this.scene.add(room);
+        
 
         const controls = new OrbitControls( this.camera, this.renderer.domElement );
 
@@ -47,21 +51,25 @@ class App{
 	render() {   
         this.renderer.render(this.scene, this.camera);
     }
+
     createCamera(){
         const camera = new THREE.PerspectiveCamera(
-            60,
-            window.innerWidth / window.innerHeight,
+            50,
+            window.innerWidth/window.innerHeight,
             0.1,
             100
         );
-        camera.position.set(0, 0, 3);
+
+        camera.position.set(0, 1.6, 3);
         return camera;
     }
+
     createScene() {
         const scene = new THREE.Scene();
         scene.background = new THREE.Color( 0xbbddff );
         return scene;
     }
+
     createRenderer() {
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -69,11 +77,12 @@ class App{
         renderer.outputEncoding = THREE.sRGBEncoding;
         return renderer;
     }
+
     addLight(){
-        const ambient = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.3);
+        const ambient = new THREE.HemisphereLight(0x606060, 0x404040);
 		this.scene.add(ambient);
-        const light = new THREE.DirectionalLight();
-        light.position.set( 0.2, 1, 1);
+        const light = new THREE.DirectionalLight(0xffffff);
+        light.position.set(1,1,1).normalize();
         this.scene.add(light);
     }
     setupVR() {
