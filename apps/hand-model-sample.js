@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton';
 import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry';
@@ -10,10 +11,11 @@ class App{
 		const container = document.createElement( 'div' );
 		document.body.appendChild( container );
 
-        let hand1, hand2;
-        let controller1, controller2;
-        let controllerGrip1, controllerGrip2;
+        let controllerRight, controllerLeft;
+        let controllerRightGrip, controllerLeftGrip;
+        
 
+        /*Creating Camera, Scene and Renderer */
         this.camera = this.createCamera();
         this.scene = this.createScene();
         this.renderer = this.createRenderer();
@@ -22,38 +24,43 @@ class App{
         this.controls = new OrbitControls( this.camera, container );
         this.controls.target.set( 0, 1.6, 0 );
         this.controls.update();
-        controller1 = this.renderer.xr.getController( 0 );
-        this.scene.add( controller1 );
-        controller2 = this.renderer.xr.getController( 1 );
-        this.scene.add( controller2 );
+
+        /*Initialising controllerModelFactory and handModelFactory from Three.js */
         const controllerModelFactory = new XRControllerModelFactory();
-        const handModelFactory = new XRHandModelFactory();
-        controllerGrip1 = this.renderer.xr.getControllerGrip( 0 );
-        controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-        this.scene.add( controllerGrip1 );
+        const handModelFactory = new XRHandModelFactory().setPath(
+            "/hand-models"
+        );; //not sure about setPath ~ trying to fetch .glb files for hand models
 
-        hand1 = this.renderer.xr.getHand( 0 );
-        hand1.add( handModelFactory.createHandModel( hand1 ) );
+        /* Setting up Right Hand from POV */
+        controllerRight = this.renderer.xr.getController( 0 );
+        this.scene.add( controllerRight );
+        controllerRightGrip = this.renderer.xr.getControllerGrip( 0 );
+        controllerRightGrip.add( controllerModelFactory.createControllerModel( controllerRightGrip ) );
+        this.scene.add( controllerRightGrip );
 
-        this.scene.add( hand1 );
+        this.rightHand = this.renderer.xr.getHand( 0 );
+        this.rightHand.add( handModelFactory.createHandModel( this.rightHand) );
+        this.scene.add( this.rightHand );
+       
+        /*Event Listeners for 'Pinch' detection in the Right Hand */
+        this.rightHand.addEventListener( 'pinchstart', this.onPinchStartRight);
+        this.rightHand.addEventListener( 'pinchend', this.onPinchEndRight);
 
-        // Hand 2
-        controllerGrip2 = this.renderer.xr.getControllerGrip( 1 );
-        controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-        this.scene.add( controllerGrip2 );
+        /* Setting up Left Hand from POV */
+        controllerLeft = this.renderer.xr.getController( 1 );
+        this.scene.add( controllerLeft );
+        controllerLeftGrip = this.renderer.xr.getControllerGrip( 1 );
+        controllerLeftGrip.add( controllerModelFactory.createControllerModel( controllerLeftGrip ) );
+        this.scene.add( controllerLeftGrip );
 
-        hand2 = this.renderer.xr.getHand( 1 );
-        hand2.add( handModelFactory.createHandModel( hand2 ) );
-        this.scene.add( hand2 );
+        this.leftHand = this.renderer.xr.getHand( 1 );
+        this.leftHand.add( handModelFactory.createHandModel( this.leftHand ) );
+        this.scene.add( this.leftHand );
 
-        const g1 = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
+         /*Event Listeners for 'Pinch' detection in the Right Hand */
+        this.leftHand.addEventListener( 'pinchstart', this.onPinchStartLeft);
+        this.leftHand.addEventListener( 'pinchend', this.onPinchEndLeft);
 
-        const line = new THREE.Line( g1 );
-        line.name = 'line';
-        line.scale.z = 5;
-
-        controller1.add( line.clone() );
-        controller2.add( line.clone() );
 
         this.addLight();
 
@@ -83,7 +90,38 @@ class App{
         
         this.renderer.setAnimationLoop(this.render.bind(this));
         window.addEventListener('resize', this.resize.bind(this) );
+        
 	}	
+
+    onPinchStartRight(event) {
+        var timeStamp = new Date();
+        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        console.log("RightHand Pinch Started at: " + currentTimeStamp);
+        const hand = event.target;
+        const indexTip = hand.joints[ 'index-finger-tip' ];
+        //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+    }
+
+    onPinchEndRight(event) {
+        var timeStamp = new Date();
+        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        console.log("Righthand Pinch Ended at: " + currentTimeStamp);
+    }
+
+    onPinchStartLeft(event) {
+        var timeStamp = new Date();
+        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        console.log("LeftHand Pinch Started at: " + currentTimeStamp);
+        const hand = event.target;
+        const indexTip = hand.joints[ 'index-finger-tip' ];
+        //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+    }
+
+    onPinchEndLeft(event) {
+        var timeStamp = new Date();
+        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        console.log("LeftHand Pinch Ended at: " + currentTimeStamp);
+    }
     
     resize(){
         this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -108,7 +146,7 @@ class App{
 
     createScene() {
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color( 0xbbddff );
+        scene.background = new THREE.Color( 0x808080 );
         return scene;
     }
 
@@ -135,3 +173,25 @@ class App{
 }
 
 export default App;
+
+
+/* Attempts 
+    // const geom = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
+    // const line = new THREE.Line( g1 );
+    // line.name = 'line';
+    // line.scale.z = 5;
+    // controller1.add( line.clone() );
+    // controller2.add( line.clone() );
+
+    // console.log(this.hand1.getWorldPosition());
+    // this.scene.updateMatrixWorld(true);
+    // var position = new THREE.Vector3();
+    // console.log(this.hand1.getWorldPosition(position));
+    // this.hand1.addEventListener( 'pinchend', function ( event ) {
+    //     console.log("Pinched! - hand1" + JSON.stringify(hand1.getWorldPosition(position), null, 4));           
+    //     console.log(hand1.matrixWorld.getPosition().x + ',' + hand1.matrixWorld.getPosition().y + ',' + hand1.matrixWorld.getPosition().z);
+    //     console.log(hand1.getWorldPosition(position));
+    //     // position.setFromMatrixPosition(hand1.MatrixWorld);
+    //     // console.log(position.x + ',' + position.y + ',' + position.z);
+    // } );
+ */
