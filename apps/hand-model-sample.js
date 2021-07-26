@@ -67,14 +67,14 @@ let App = class App{
                 // pixel.quaternion.copy( indexTip.quaternion );
                 // this.scene.add( pixel );
 
-                const geometry0 = new THREE.SphereBufferGeometry(0.01, 30, 30);
-                const material0 = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
+                const geometryR = new THREE.SphereBufferGeometry(0.01, 30, 30);
+                const materialR = new THREE.MeshStandardMaterial({color: 0x000000});
 
-                const sphere0 = new THREE.Mesh(geometry0, material0);
-                sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
+                const sphereR = new THREE.Mesh(geometryR, materialR);
+                sphereR.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
                 // sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.x);
 
-                this.scene.add(sphere0);
+                this.scene.add(sphereR);
             }
             
         })
@@ -92,7 +92,26 @@ let App = class App{
         this.scene.add( this.leftHand );
 
          /*Event Listeners for 'Pinch' detection in the Right Hand */
-        this.leftHand.addEventListener( 'pinchstart', this.onPinchStartLeft);
+        this.leftHand.addEventListener( 'pinchstart', (event) => {
+            let timeStamp = new Date();
+            let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+            console.log("LeftHand Pinch Started at: " + currentTimeStamp);
+            const hand = event.target;
+            const indexTip = hand.joints[ 'index-finger-tip' ];
+            this.drawFlag = true;
+            if(this.drawFlag == true){
+                console.log("drawing - left hand");
+                console.log("Index Tip Position: " + indexTip.position);
+
+                const geometryL = new THREE.SphereBufferGeometry(0.01, 30, 30);
+                const materialL = new THREE.MeshStandardMaterial({color: 0xff0000});
+
+                const sphereL = new THREE.Mesh(geometryL, materialL);
+                sphereL.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
+              
+                this.scene.add(sphereL);
+            }
+        });
         this.leftHand.addEventListener( 'pinchend', this.onPinchEndLeft);
 
 
