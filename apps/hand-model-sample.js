@@ -55,14 +55,25 @@ let App = class App{
             if(this.drawFlag == true){
                 console.log("drawing - right hand");
                 console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
-                var dotGeometry = new THREE.BufferGeometry();
-                //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
-                //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-                var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
-                const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
-                pixel.position.copy( indexTip.position );
-                pixel.quaternion.copy( indexTip.quaternion );
-                this.scene.add( pixel );
+
+                console.log(indexTip.position)
+                // var dotGeometry = new THREE.BufferGeometry();
+                // //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
+                // //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
+                // var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
+                // const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
+                // pixel.position.copy( indexTip.position );
+                // pixel.quaternion.copy( indexTip.quaternion );
+                // this.scene.add( pixel );
+
+                const geometry0 = new THREE.SphereBufferGeometry(0.4, 30, 30);
+                const material0 = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
+
+                const sphere0 = new THREE.Mesh(geometry0, material0);
+                sphere0.position.set(0, 0.6, -1.5);
+                // sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.x);
+
+                this.scene.add(sphere0)
             }
             
         })
@@ -86,13 +97,13 @@ let App = class App{
 
         this.addLight();
 
-        const geometry = new THREE.SphereBufferGeometry(0.4, 30, 30);
-        const material = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
+        // const geometry = new THREE.SphereBufferGeometry(0.4, 30, 30);
+        // const material = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
 
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(0, 0.6, -1.5);
+        // const sphere = new THREE.Mesh(geometry, material);
+        // sphere.position.set(0, 0.6, -1.5);
 
-        this.scene.add(sphere)
+        // this.scene.add(sphere)
 
         const room = new THREE.LineSegments(
             new BoxLineGeometry(6, 6, 6, 10, 10, 10),
@@ -126,14 +137,17 @@ let App = class App{
             console.log("drawing - right hand");
         }
         console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
-        var dotGeometry = new THREE.BufferGeometry();
-        //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
-        //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-        var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
-        const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
-        pixel.position.copy( indexTip.position );
-        pixel.quaternion.copy( indexTip.quaternion );
-        this.scene.add( pixel );
+        // var dotGeometry = new THREE.BufferGeometry();
+        // //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
+        // //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
+        // var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
+        // const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
+        // pixel.position.copy( indexTip.position );
+        // pixel.quaternion.copy( indexTip.quaternion );
+        // this.scene.add( pixel );
+
+
+        
     
     }
 
