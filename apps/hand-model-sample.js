@@ -57,6 +57,7 @@ let App = class App{
                 console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
 
                 console.log(indexTip.position);
+
                 // var dotGeometry = new THREE.BufferGeometry();
                 // //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
                 // //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
@@ -66,11 +67,11 @@ let App = class App{
                 // pixel.quaternion.copy( indexTip.quaternion );
                 // this.scene.add( pixel );
 
-                const geometry0 = new THREE.SphereBufferGeometry(0.4, 0.4, 0.4);
+                const geometry0 = new THREE.SphereBufferGeometry(0.01, 30, 30);
                 const material0 = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
 
                 const sphere0 = new THREE.Mesh(geometry0, material0);
-                sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.y);
+                sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
                 // sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.x);
 
                 this.scene.add(sphere0);
