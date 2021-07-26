@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
-class App{
+let App = class App{
     constructor(){
 		const container = document.createElement( 'div' );
 		document.body.appendChild( container );
@@ -14,6 +14,7 @@ class App{
         let controllerRight, controllerLeft;
         let controllerRightGrip, controllerLeftGrip;
         
+        this.drawFlag = false;
 
         /*Creating Camera, Scene and Renderer */
         this.camera = this.createCamera();
@@ -43,7 +44,28 @@ class App{
         this.scene.add( this.rightHand );
        
         /*Event Listeners for 'Pinch' detection in the Right Hand */
-        this.rightHand.addEventListener( 'pinchstart', this.onPinchStartRight);
+        // this.rightHand.addEventListener( 'pinchstart', this.onPinchStartRight);
+        this.rightHand.addEventListener('pinchstart', (event) => {
+            let timeStamp = new Date();
+            let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+            console.log("RightHand Pinch Started at: " + currentTimeStamp);
+            const hand = event.target;
+            const indexTip = hand.joints[ 'index-finger-tip' ];
+            this.drawFlag = true;
+            if(this.drawFlag == true){
+                console.log("drawing - right hand");
+                console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+                var dotGeometry = new THREE.BufferGeometry();
+                //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
+                //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
+                var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
+                const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
+                pixel.position.copy( indexTip.position );
+                pixel.quaternion.copy( indexTip.quaternion );
+                this.scene.add( pixel );
+            }
+            
+        })
         this.rightHand.addEventListener( 'pinchend', this.onPinchEndRight);
 
         /* Setting up Left Hand from POV */
@@ -94,23 +116,40 @@ class App{
 	}	
 
     onPinchStartRight(event) {
-        var timeStamp = new Date();
-        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        let timeStamp = new Date();
+        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
         console.log("RightHand Pinch Started at: " + currentTimeStamp);
         const hand = event.target;
         const indexTip = hand.joints[ 'index-finger-tip' ];
-        //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+        this.drawFlag = true;
+        if(this.drawFlag == true){
+            console.log("drawing - right hand");
+        }
+        console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+        var dotGeometry = new THREE.BufferGeometry();
+        //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
+        //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
+        var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
+        const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
+        pixel.position.copy( indexTip.position );
+        pixel.quaternion.copy( indexTip.quaternion );
+        this.scene.add( pixel );
+    
     }
 
     onPinchEndRight(event) {
-        var timeStamp = new Date();
-        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        this.drawFlag = false;
+        let timeStamp = new Date();
+        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
         console.log("Righthand Pinch Ended at: " + currentTimeStamp);
+        if(this.drawFlag == false) {
+            console.log("stop drawing");
+        }
     }
 
     onPinchStartLeft(event) {
-        var timeStamp = new Date();
-        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        let timeStamp = new Date();
+        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
         console.log("LeftHand Pinch Started at: " + currentTimeStamp);
         const hand = event.target;
         const indexTip = hand.joints[ 'index-finger-tip' ];
@@ -118,8 +157,8 @@ class App{
     }
 
     onPinchEndLeft(event) {
-        var timeStamp = new Date();
-        var currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
+        let timeStamp = new Date();
+        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
         console.log("LeftHand Pinch Ended at: " + currentTimeStamp);
     }
     
