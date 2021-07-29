@@ -15,6 +15,11 @@ let App = class App{
         let controllerRightGrip, controllerLeftGrip;
         
         this.drawFlag = false;
+        this.spheres = [];
+        let grabbing = false;
+
+        this.tmpVector1 = new THREE.Vector3();
+		this.tmpVector2 = new THREE.Vector3();
 
         /*Creating Camera, Scene and Renderer */
         this.camera = this.createCamera();
@@ -57,22 +62,13 @@ let App = class App{
                 console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
 
                 console.log(indexTip.position);
-
-                // var dotGeometry = new THREE.BufferGeometry();
-                // //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
-                // //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-                // var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
-                // const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
-                // pixel.position.copy( indexTip.position );
-                // pixel.quaternion.copy( indexTip.quaternion );
-                // this.scene.add( pixel );
-
                 const geometryR = new THREE.SphereBufferGeometry(0.01, 30, 30);
                 const materialR = new THREE.MeshStandardMaterial({color: 0x000000});
 
                 const sphereR = new THREE.Mesh(geometryR, materialR);
                 sphereR.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
-                // sphere0.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.x);
+                this.spheres.push(sphereR);
+                console.log(this.spheres);
 
                 this.scene.add(sphereR);
             }
@@ -91,6 +87,8 @@ let App = class App{
         this.leftHand.add( handModelFactory.createHandModel( this.leftHand ) );
         this.scene.add( this.leftHand );
 
+        this.currentSphere;
+
          /*Event Listeners for 'Pinch' detection in the Right Hand */
         this.leftHand.addEventListener( 'pinchstart', (event) => {
             let timeStamp = new Date();
@@ -99,20 +97,31 @@ let App = class App{
             const hand = event.target;
             const indexTip = hand.joints[ 'index-finger-tip' ];
             this.drawFlag = true;
-            if(this.drawFlag == true){
-                console.log("drawing - left hand");
-                console.log("Index Tip Position: " + indexTip.position);
+            // if(this.drawFlag == true){
+            //     console.log("drawing - left hand");
+            //     console.log("Index Tip Position: " + indexTip.position);
 
-                const geometryL = new THREE.SphereBufferGeometry(0.01, 30, 30);
-                const materialL = new THREE.MeshStandardMaterial({color: 0xff0000});
+            //     const geometryL = new THREE.SphereBufferGeometry(0.01, 30, 30);
+            //     const materialL = new THREE.MeshStandardMaterial({color: 0xff0000});
 
-                const sphereL = new THREE.Mesh(geometryL, materialL);
-                sphereL.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
+            //     const sphereL = new THREE.Mesh(geometryL, materialL);
+            //     sphereL.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
               
-                this.scene.add(sphereL);
+            //     this.scene.add(sphereL);
+            // }
+            const sphereInProximity = this.checkProximity(indexTip);
+            if(sphereInProximity) {
+                grabbing = true;
+                this.currentSphere = sphereInProximity;
+                indexTip.attach(sphereInProximity);
             }
         });
-        this.leftHand.addEventListener( 'pinchend', this.onPinchEndLeft);
+        this.leftHand.addEventListener( 'pinchend', (event) => {
+            const hand = event.target;
+            const indexTip = hand.joints[ 'index-finger-tip' ];
+            indexTip.remove(this.currentSphere);
+            this.scene.add(this.currentSphere);
+        });
 
 
         this.addLight();
@@ -146,6 +155,22 @@ let App = class App{
         
 	}	
 
+    checkProximity(indexTip){
+        for(let i = 0; i< this.spheres.length; i++){
+            const sphere = this.spheres[ i ];
+            var dx = indexTip.position.x - sphere.position.x; 
+            var dy = indexTip.position.y - sphere.position.y; 
+            var dz = indexTip.position.z - sphere.position.z; 
+            const distance = Math.sqrt(dx*dx+dy*dy+dz*dz);
+            console.log("Distance: " + distance);
+            if(distance <= 0.02 ){
+                console.log("move");
+                return sphere;
+            } 
+        }
+        return null;
+    }
+
     onPinchStartRight(event) {
         let timeStamp = new Date();
         let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
@@ -156,19 +181,7 @@ let App = class App{
         if(this.drawFlag == true){
             console.log("drawing - right hand");
         }
-        console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
-        // var dotGeometry = new THREE.BufferGeometry();
-        // //dotGeometry.setAttribute( 'position', new Float32BufferAttribute( new Vector3().toArray(), 3 ) );
-        // //dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-        // var dotMaterial = new THREE.PointsMaterial( { size: 0.1 } );
-        // const pixel = new THREE.Mesh( dotGeometry, dotMaterial );
-        // pixel.position.copy( indexTip.position );
-        // pixel.quaternion.copy( indexTip.quaternion );
-        // this.scene.add( pixel );
-
-
-        
-    
+        console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4));    
     }
 
     onPinchEndRight(event) {
