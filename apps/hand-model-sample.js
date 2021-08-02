@@ -113,14 +113,18 @@ let App = class App{
             if(sphereInProximity) {
                 grabbing = true;
                 this.currentSphere = sphereInProximity;
+                console.log("hereL : " + JSON.stringify(this.currentSphere, null, 4));
                 indexTip.attach(sphereInProximity);
             }
         });
+
         this.leftHand.addEventListener( 'pinchend', (event) => {
+            grabbing = false;
             const hand = event.target;
             const indexTip = hand.joints[ 'index-finger-tip' ];
-            indexTip.remove(this.currentSphere);
-            this.scene.add(this.currentSphere);
+            console.log("CS: " + JSON.stringify(this.currentSphere, null, 4));
+            // this.currentSphere.position.set(indexTip.position);
+            //this.scene.add(this.currentSphere);
         });
 
 
