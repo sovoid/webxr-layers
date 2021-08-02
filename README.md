@@ -9,5 +9,16 @@ This repository is an amalgamation of WebXR samples created using the [WebXR API
 
 - [Project Setup - Oculus Browser](./docs/Oculus-Dev-Setup.md): Detailed steps leading upto a complete developer and debugging setup within the Oculus Browser
 
+## Samples Overview
+This application contains samples that belong to two broad categories:
 
+- [Creaing and Interacting with Video Layers in an XR Environment]()
+- Hand Gestures and Interactions with Three.js Objects
+
+
+## Contributors
+| MLH Fellowship Cohort  | Contributors |
+| ------------- | ------------- |
+| [Spring 2021](https://developers.facebook.com/blog/post/2021/03/31/facebook-open-source-introduces-mlh-fellowship-class-spring-2021/)  | [Soham Parekh](https://github.com/und3fined-v01d), [Teoh Zhixiang](https://github.com/zhixiangteoh)  |
+| Summer 2021  | [Schezeen Fazulbhoy](https://github.com/schezfaz), [Awan Shrestha ](https://github.com/awanshrestha) |
 
