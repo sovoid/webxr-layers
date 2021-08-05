@@ -5,3 +5,4 @@ export { default as SimpleEquirectMediaLayer } from "./simple-video-layers/equir
 export { default as MultipleLayers } from "./simple-video-layers/multiple-layers";
 export { default as HandDrawing }  from "./hand-drawing";
 export { default as HandGrabbing } from "./hand-grabbing";
+export { default as HandWebXR } from './hand-webxr'; 

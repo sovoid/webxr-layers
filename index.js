@@ -5,7 +5,8 @@ import {
     SimpleEquirectMediaLayer,
     MultipleLayers,
     HandDrawing,
-    HandGrabbing
+    HandGrabbing,
+    HandWebXR
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -32,6 +33,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/handGrabbing":
             app = new HandGrabbing();
+            break;
+        case "/handWebXR":
+            app = new HandWebXR();
             break;
         default:
             const indexContainer = document.querySelector(".container");
