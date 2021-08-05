@@ -4,7 +4,8 @@ import {
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
-    HandModelSample
+    HandDrawing,
+    HandGrabbing
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -26,8 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
         case "/multiple-layers":
             app = new MultipleLayers();
             break;
-        case "/handModelSample":
-            app = new HandModelSample();
+        case "/handDrawing":
+            app = new HandDrawing();
+            break;
+        case "/handGrabbing":
+            app = new HandGrabbing();
             break;
         default:
             const indexContainer = document.querySelector(".container");
