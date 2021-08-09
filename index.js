@@ -6,6 +6,7 @@ import {
     MultipleLayers,
     HandDrawing,
     HandGrabbing,
+    HandGrabbingDist,
     HandWebXR
 } from "./apps";
 
@@ -33,6 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/handGrabbing":
             app = new HandGrabbing();
+            break;
+        case "/handGrabbingDist":
+            app = new HandGrabbingDist();
             break;
         case "/handWebXR":
             app = new HandWebXR();
