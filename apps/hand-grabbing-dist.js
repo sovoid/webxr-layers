@@ -101,7 +101,11 @@ let App = class App {
                         theHand = this.leftHand;
                         let indexTip = theHand.joints['index-finger-tip'];
                         let thumbTip = theHand.joints['thumb-tip'];
-                        this.erase(indexTip, name);
+                        let middleFingerTip = theHand.joints['middle-finger-tip'];
+                        let ringFingerTip = theHand.joints['ring-finger-tip'];
+                        let pinkyFingerTip = theHand.joints['pinky-finger-tip'];
+                        let fingerTips = [indexTip, thumbTip, middleFingerTip, pinkyFingerTip, ringFingerTip];
+                        this.erase(fingerTips, name);
                     }
 
                     
@@ -134,12 +138,14 @@ let App = class App {
         }
     }
 
-    erase(indexTip, hand){
+    erase(fingerTips, hand){
         if(hand=="left"){
-            const sphereInProximity = this.checkProximity(indexTip);
-            if(sphereInProximity) {
-                this.currentSphere = sphereInProximity;
-                this.scene.remove(sphereInProximity);
+            for (var i = 0; i < fingerTips.length; i++) {
+                const sphereInProximity = this.checkProximity(fingerTips[i]);
+                if(sphereInProximity) {
+                    this.currentSphere = sphereInProximity;
+                    this.scene.remove(sphereInProximity);
+                }   
             }
        }
     }
@@ -151,8 +157,7 @@ let App = class App {
             var dy = indexTip.position.y - sphere.position.y; 
             var dz = indexTip.position.z - sphere.position.z; 
             const distance = Math.sqrt(dx*dx+dy*dy+dz*dz);
-            console.log("Distance: " + distance);
-            if(distance <= 0.02 ){
+            if(distance <= 0.04 ){
                 console.log("move");
                 return sphere;
             } 
