@@ -6,6 +6,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
+const tmpVector1 = new THREE.Vector3();
+
 let App = class App{
     constructor(){
 		const container = document.createElement( 'div' );
@@ -53,22 +55,22 @@ let App = class App{
         this.rightHand.addEventListener('pinchstart', (event) => {
             let timeStamp = new Date();
             let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-            console.log("RightHand Pinch Started at: " + currentTimeStamp);
+            //console.log("RightHand Pinch Started at: " + currentTimeStamp);
             const hand = event.target;
             const indexTip = hand.joints[ 'index-finger-tip' ];
             this.drawFlag = true;
             if(this.drawFlag == true){
-                console.log("drawing - right hand");
-                console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+                //console.log("drawing - right hand");
+                //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
 
-                console.log(indexTip.position);
+                //console.log(indexTip.position);
                 const geometryR = new THREE.SphereBufferGeometry(0.01, 30, 30);
                 const materialR = new THREE.MeshStandardMaterial({color: 0x000000});
 
                 const sphereR = new THREE.Mesh(geometryR, materialR);
                 sphereR.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
                 this.spheres.push(sphereR);
-                console.log(this.spheres);
+                //console.log(this.spheres);
 
                 this.scene.add(sphereR);
             }
@@ -93,7 +95,7 @@ let App = class App{
         this.leftHand.addEventListener( 'pinchstart', (event) => {
             let timeStamp = new Date();
             let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-            console.log("LeftHand Pinch Started at: " + currentTimeStamp);
+            //console.log("LeftHand Pinch Started at: " + currentTimeStamp);
             const hand = event.target;
             const indexTip = hand.joints[ 'index-finger-tip' ];
             this.drawFlag = true;
@@ -109,12 +111,19 @@ let App = class App{
               
             //     this.scene.add(sphereL);
             // }
-            const sphereInProximity = this.checkProximity(indexTip);
+            let sphereInProximity = this.checkProximity(indexTip);
             if(sphereInProximity) {
                 grabbing = true;
-                this.currentSphere = sphereInProximity;
-                console.log("hereL : " + JSON.stringify(this.currentSphere, null, 4));
-                indexTip.attach(sphereInProximity);
+                this.currentSphere = (this.currentSphere) 
+                    ? this.currentSphere.concat(sphereInProximity)
+                    : sphereInProximity;
+                // console.log(sphereInProximity)
+                // console.log(this.currentSphere)
+                //console.log("hereL : " + JSON.stringify(this.currentSphere, null, 4));
+                for (let i = 0; i < this.currentSphere.length; i ++){
+                    indexTip.attach(this.currentSphere[i])
+                }
+                // indexTip.attach(sphereInProximity);
             }
         });
 
@@ -122,7 +131,13 @@ let App = class App{
             grabbing = false;
             const hand = event.target;
             const indexTip = hand.joints[ 'index-finger-tip' ];
-            console.log("CS: " + JSON.stringify(this.currentSphere, null, 4));
+            //console.log("CS: " + JSON.stringify(this.currentSphere, null, 4));
+            let indexCurrentPose = indexTip.getWorldPosition(tmpVector1)
+            for (let i = 0; i < this.currentSphere.length; i ++){
+                let tempSphere = this.currentSphere[i]
+                this.scene.attach(tempSphere)
+                this.currentSphere.pop(this.currentSphere[i])
+            }
             // this.currentSphere.position.set(indexTip.position);
             //this.scene.add(this.currentSphere);
         });
@@ -160,57 +175,56 @@ let App = class App{
 	}	
 
     checkProximity(indexTip){
+        let allspheres = []
+
         for(let i = 0; i< this.spheres.length; i++){
             const sphere = this.spheres[ i ];
             var dx = indexTip.position.x - sphere.position.x; 
             var dy = indexTip.position.y - sphere.position.y; 
             var dz = indexTip.position.z - sphere.position.z; 
             const distance = Math.sqrt(dx*dx+dy*dy+dz*dz);
-            console.log("Distance: " + distance);
+            //console.log("Distance: " + distance);
             if(distance <= 0.02 ){
-                console.log("move");
-                return sphere;
+                //console.log("move");
+                allspheres.push(sphere)
             } 
         }
-        return null;
+        return allspheres;
     }
 
     onPinchStartRight(event) {
         let timeStamp = new Date();
         let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        console.log("RightHand Pinch Started at: " + currentTimeStamp);
+        //console.log("RightHand Pinch Started at: " + currentTimeStamp);
         const hand = event.target;
         const indexTip = hand.joints[ 'index-finger-tip' ];
         this.drawFlag = true;
         if(this.drawFlag == true){
-            console.log("drawing - right hand");
+            //console.log("drawing - right hand");
         }
-        console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4));    
+        //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4));    
     }
 
     onPinchEndRight(event) {
         this.drawFlag = false;
         let timeStamp = new Date();
         let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        console.log("Righthand Pinch Ended at: " + currentTimeStamp);
+        //console.log("Righthand Pinch Ended at: " + currentTimeStamp);
         if(this.drawFlag == false) {
-            console.log("stop drawing");
+            //console.log("stop drawing");
         }
     }
 
     onPinchStartLeft(event) {
         let timeStamp = new Date();
         let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        console.log("LeftHand Pinch Started at: " + currentTimeStamp);
-        const hand = event.target;
-        const indexTip = hand.joints[ 'index-finger-tip' ];
-        //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4)); 
+        //console.log("LeftHand Pinch Started at: " + currentTimeStamp);
     }
 
     onPinchEndLeft(event) {
         let timeStamp = new Date();
         let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        console.log("LeftHand Pinch Ended at: " + currentTimeStamp);
+        //console.log("LeftHand Pinch Ended at: " + currentTimeStamp);
     }
     
     resize(){
