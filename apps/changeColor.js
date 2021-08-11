@@ -6,6 +6,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
+const tmpVector1 = new THREE.Vector3();
+const tmpVector2 = new THREE.Vector3();
+
 let App = class App {
     constructor() {
         const container = document.createElement('div');
@@ -29,7 +32,7 @@ let App = class App {
         /*Initialising controllerModelFactory and handModelFactory from Three.js */
         const controllerModelFactory = new XRControllerModelFactory();
         const handModelFactory = new XRHandModelFactory().setPath(
-            "..hkjhk/hand-models"
+            "/hand-models"
         );;
 
         /* Setting up Right Hand from POV */
@@ -68,10 +71,10 @@ let App = class App {
         const geometry = new THREE.SphereBufferGeometry(0.4, 30, 30);
         const material = new THREE.MeshStandardMaterial({ color: 0xfdffbf });
 
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(0, 0.6, -1.5);
+        this.sphere = new THREE.Mesh(geometry, material);
+        this.sphere.position.set(0, 0.6, -0.45);
 
-        this.scene.add(sphere)
+        this.scene.add(this.sphere)
 
         const room = new THREE.LineSegments(
             new BoxLineGeometry(6, 6, 6, 10, 10, 10),
@@ -106,45 +109,50 @@ let App = class App {
         if (this.session) {
             for (const inputSource of this.session.inputSources) {
                 if (inputSource.hand) {
-
                     let name = inputSource.handedness;
                     let theHand;
                     if (name === 'right'){
                         theHand = this.rightHand;
                         let indexTip = theHand.joints['index-finger-tip'];
-                        let thumbTip = theHand.joints['thumb-tip'];
-                        this.checkPinch(indexTip, thumbTip, name)
+                        this.checkTouch(indexTip, name)
                     } else {
                         theHand = this.leftHand;
                         let indexTip = theHand.joints['index-finger-tip'];
-                        let thumbTip = theHand.joints['thumb-tip'];
-                        this.checkPinch(indexTip, thumbTip, name)
+                        this.checkTouch(indexTip, name)
                     }
-
-                    
-
-                    // let leftIndexTip = this.leftHand.joints['index-finger-tip'];
-                    // let leftThumbTip = this.leftHand.joints['thumb-tip'];
-                    // this.checkPinch(leftThumbTip, leftIndexTip, 'LEFT')
                 }
             }
         }
     }
-    checkPinch(thumbTip, indexTip, hand) {
-        let diffX = Math.abs(indexTip.position.x - thumbTip.position.x)
-        let diffY = Math.abs(indexTip.position.y - thumbTip.position.y)
-        let diffZ = Math.abs(indexTip.position.z - thumbTip.position.z)
-        if (diffX!=0 || diffY!=0 || diffZ!=0){// When hands are not seen, the diffs initialize at zeroes. Stops once hands are seen.
-            if (diffX < 0.02 && diffY < 0.02 && diffZ < 0.02) {
-                console.log(diffX, diffY, diffZ)
-                console.log(hand + "PINCHING")
-                let geometryPinch = new THREE.SphereBufferGeometry(0.01, 30, 30);
-                let materialPinch = new THREE.MeshStandardMaterial({ color: 0xfdffbf });
+    checkTouch( indexTip, hand) {
+        // let diffX = Math.abs(indexTip.position.x - thumbTip.position.x)
+        // let diffY = Math.abs(indexTip.position.y - thumbTip.position.y)
+        // let diffZ = Math.abs(indexTip.position.z - thumbTip.position.z)
+        // if (diffX!=0 || diffY!=0 || diffZ!=0){// When hands are not seen, the diffs initialize at zeroes. Stops once hands are seen.
+        //     if (diffX < 0.02 && diffY < 0.02 && diffZ < 0.02) {
+        //         console.log(diffX, diffY, diffZ)
+        //         console.log(hand + "PINCHING")
+        //         let geometryPinch = new THREE.SphereBufferGeometry(0.01, 30, 30);
+        //         let materialPinch = new THREE.MeshStandardMaterial({ color: 0xfdffbf });
     
-                let spherePinch = new THREE.Mesh(geometryPinch, materialPinch);
-                spherePinch.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
-                this.scene.add(spherePinch);
+        //         let spherePinch = new THREE.Mesh(geometryPinch, materialPinch);
+        //         spherePinch.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
+        //         this.scene.add(spherePinch);
+        //     }
+        // }
+        
+        const distance = indexTip.getWorldPosition(tmpVector1).distanceTo(this.sphere.getWorldPosition(tmpVector2));
+        if (distance < this.sphere.geometry.boundingSphere.radius * this.sphere.scale.x) {
+
+            console.log('Touch')
+            if(hand == 'right'){
+                this.sphere.material.color.setHex( 0x00ffaa );
             }
+            if(hand == 'left'){
+                this.sphere.material.color.setHex( 0xb983de );
+            }
+
+
         }
 
     }

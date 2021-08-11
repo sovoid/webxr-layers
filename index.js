@@ -8,7 +8,8 @@ import {
     HandDrawing,
     HandGrabbing,
     HandGrabbingDist,
-    HandWebXR
+    HandWebXR,
+    ResizeObject
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,6 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/handWebXR":
             app = new HandWebXR();
+            break;
+        case "/resizeObject":
+            app = new ResizeObject();
             break;
         default:
             const indexContainer = document.querySelector(".container");
