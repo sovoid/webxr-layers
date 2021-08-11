@@ -4,6 +4,7 @@ import {
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
+    SimpleHands,
     HandDrawing,
     HandGrabbing,
     HandGrabbingDist,
@@ -28,6 +29,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/multiple-layers":
             app = new MultipleLayers();
+            break;
+        case "/webxrHandInput":
+            app = new SimpleHands();
             break;
         case "/handDrawing":
             app = new HandDrawing();

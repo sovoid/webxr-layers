@@ -4,8 +4,8 @@ import { BoxLineGeometry } from "three/examples/jsm/geometries/BoxLineGeometry";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
-import { WebGLRenderer } from "../util/WebGLRenderer";
-import { VRButton } from "../util/webxr/VRButton";
+import { WebGLRenderer } from "../../util/WebGLRenderer";
+import { VRButton } from "../../util/webxr/VRButton";
 
 class App {
     constructor() {
