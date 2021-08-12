@@ -9,7 +9,8 @@ import {
     HandGrabbing,
     HandGrabbingDist,
     ResizeObject,
-    SnapFingers
+    SnapFingers,
+    EjectWeb
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -48,6 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/snapFingers":
             app = new SnapFingers();
+            break;
+        case "/ejectWeb":
+            app = new EjectWeb();
             break;
         default:
             const indexContainer = document.querySelector(".container");
