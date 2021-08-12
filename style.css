@@ -109,6 +109,14 @@ a {
     transition: color 0.15s ease, border-color 0.15s ease;
 }
 
+.spring21 {
+    background-color: white;
+}
+
+.summer21 {
+    background-color: #FFF0E5;
+}
+
 .card:hover,
 .card:focus,
 .card:active {

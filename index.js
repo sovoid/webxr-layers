@@ -8,7 +8,6 @@ import {
     HandDrawing,
     HandGrabbing,
     HandGrabbingDist,
-    HandWebXR,
     ResizeObject,
     SnapFingers
 } from "./apps";
@@ -43,9 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/handGrabbingDist":
             app = new HandGrabbingDist();
-            break;
-        case "/handWebXR":
-            app = new HandWebXR();
             break;
         case "/resizeObject":
             app = new ResizeObject();
