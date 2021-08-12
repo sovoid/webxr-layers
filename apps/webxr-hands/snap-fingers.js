@@ -176,7 +176,6 @@ let App = class App {
                 if (this.didSnap == true){
                     console.log('Snapped...')
                     this.thanos()
-                    //TODO Thanos Only Works once...
                     this.midAndThumbReady = false
                 }
             }
@@ -188,7 +187,7 @@ let App = class App {
         for (let i = 0; i < spheresToDelete; i++) {
             console.log(i)
             this.scene.remove(this.spheres[i]);
-            this.spheres.pop(this.spheres[i]);
+            this.spheres = this.spheres.filter(item => item !== this.spheres[i])
         }
     }
 

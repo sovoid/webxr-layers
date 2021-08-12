@@ -136,7 +136,7 @@ let App = class App{
             for (let i = 0; i < this.currentSphere.length; i ++){
                 let tempSphere = this.currentSphere[i]
                 this.scene.attach(tempSphere)
-                this.currentSphere.pop(this.currentSphere[i])
+                this.currentSphere = this.currentSphere.filter(item => item !== this.currentSphere[i])
             }
             // this.currentSphere.position.set(indexTip.position);
             //this.scene.add(this.currentSphere);
