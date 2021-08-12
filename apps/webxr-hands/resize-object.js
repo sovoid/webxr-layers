@@ -133,8 +133,8 @@ let App = class App {
                 // Check for selection
                 let distance = indexTip.getWorldPosition(tmpVector1).distanceTo(this.sphere.getWorldPosition(tmpVector2));
                 if (distance < this.sphere.geometry.boundingSphere.radius * this.sphere.scale.x) {
-                    console.log(distance)
-                    console.log(this.sphere.geometry.boundingSphere.radius * this.sphere.scale.x)
+                    // console.log(distance)
+                    // console.log(this.sphere.geometry.boundingSphere.radius * this.sphere.scale.x)
                     if(hand == 'right'){
                         this.rightHandSelection = true;
                     }
@@ -165,13 +165,11 @@ let App = class App {
             let dz = rightIndexTip.position.z - leftIndexTip.position.z; 
             let distance = Math.sqrt(dx*dx+dy*dy+dz*dz);
 
-            //intial distance
+            this.initialDistance = this.initialDistance != 0 ? this.initialDistance : distance;
+            
+            let theRatio = distance / this.initialDistance;
 
-            //distance
-
-            // ratio -> scale 
-
-            console.log(distance)
+            this.sphere.scale.set(theRatio, theRatio, theRatio)
         }
     }
 
