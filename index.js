@@ -9,7 +9,8 @@ import {
     HandGrabbing,
     HandGrabbingDist,
     HandWebXR,
-    ResizeObject
+    ResizeObject,
+    SnapFingers
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -48,6 +49,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/resizeObject":
             app = new ResizeObject();
+            break;
+        case "/snapFingers":
+            app = new SnapFingers();
             break;
         default:
             const indexContainer = document.querySelector(".container");

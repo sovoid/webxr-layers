@@ -11,3 +11,4 @@ export { default as HandGrabbing } from "./hand-grabbing-three";
 export { default as HandGrabbingDist } from "./hand-grabbing-dist";
 export { default as HandWebXR } from './hand-webxr'; 
 export { default as ResizeObject } from './webxr-hands/resize-object'; 
+export { default as SnapFingers } from './webxr-hands/snap-fingers'; 
