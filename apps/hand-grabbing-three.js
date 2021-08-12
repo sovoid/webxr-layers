@@ -99,31 +99,15 @@ let App = class App{
             const hand = event.target;
             const indexTip = hand.joints[ 'index-finger-tip' ];
             this.drawFlag = true;
-            // if(this.drawFlag == true){
-            //     console.log("drawing - left hand");
-            //     console.log("Index Tip Position: " + indexTip.position);
-
-            //     const geometryL = new THREE.SphereBufferGeometry(0.01, 30, 30);
-            //     const materialL = new THREE.MeshStandardMaterial({color: 0xff0000});
-
-            //     const sphereL = new THREE.Mesh(geometryL, materialL);
-            //     sphereL.position.set(indexTip.position.x, indexTip.position.y, indexTip.position.z);
-              
-            //     this.scene.add(sphereL);
-            // }
             let sphereInProximity = this.checkProximity(indexTip);
             if(sphereInProximity) {
                 grabbing = true;
                 this.currentSphere = (this.currentSphere) 
                     ? this.currentSphere.concat(sphereInProximity)
                     : sphereInProximity;
-                // console.log(sphereInProximity)
-                // console.log(this.currentSphere)
-                //console.log("hereL : " + JSON.stringify(this.currentSphere, null, 4));
                 for (let i = 0; i < this.currentSphere.length; i ++){
                     indexTip.attach(this.currentSphere[i])
                 }
-                // indexTip.attach(sphereInProximity);
             }
         });
 
@@ -138,20 +122,10 @@ let App = class App{
                 this.scene.attach(tempSphere)
                 this.currentSphere = this.currentSphere.filter(item => item !== this.currentSphere[i])
             }
-            // this.currentSphere.position.set(indexTip.position);
-            //this.scene.add(this.currentSphere);
         });
 
 
         this.addLight();
-
-        // const geometry = new THREE.SphereBufferGeometry(0.4, 30, 30);
-        // const material = new THREE.MeshStandardMaterial({ color: 0xfdffbf});
-
-        // const sphere = new THREE.Mesh(geometry, material);
-        // sphere.position.set(0, 0.6, -1.5);
-
-        // this.scene.add(sphere)
 
         const room = new THREE.LineSegments(
             new BoxLineGeometry(6, 6, 6, 10, 10, 10),
@@ -190,41 +164,6 @@ let App = class App{
             } 
         }
         return allspheres;
-    }
-
-    onPinchStartRight(event) {
-        let timeStamp = new Date();
-        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        //console.log("RightHand Pinch Started at: " + currentTimeStamp);
-        const hand = event.target;
-        const indexTip = hand.joints[ 'index-finger-tip' ];
-        this.drawFlag = true;
-        if(this.drawFlag == true){
-            //console.log("drawing - right hand");
-        }
-        //console.log("IndexTip RightHand Deets: " + JSON.stringify(indexTip, null, 4));    
-    }
-
-    onPinchEndRight(event) {
-        this.drawFlag = false;
-        let timeStamp = new Date();
-        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        //console.log("Righthand Pinch Ended at: " + currentTimeStamp);
-        if(this.drawFlag == false) {
-            //console.log("stop drawing");
-        }
-    }
-
-    onPinchStartLeft(event) {
-        let timeStamp = new Date();
-        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        //console.log("LeftHand Pinch Started at: " + currentTimeStamp);
-    }
-
-    onPinchEndLeft(event) {
-        let timeStamp = new Date();
-        let currentTimeStamp = timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ":" + timeStamp.getMilliseconds();
-        //console.log("LeftHand Pinch Ended at: " + currentTimeStamp);
     }
     
     resize(){
