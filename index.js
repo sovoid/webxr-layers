@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             app = new EjectWeb();
             break;
         default:
-            const indexContainer = document.querySelector(".container");
+            const indexContainer = document.querySelector(".container-fluid");
             indexContainer.style.display = "";
     }
 

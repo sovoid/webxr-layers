@@ -4,94 +4,195 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>WebXR Layer Sample</title>
-        <link rel="stylesheet" href="/style.css" />
+        <title>WebXR Samples</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <!-- <link rel="stylesheet" href="/style.css" /> -->
+        <style>
+            .title{
+                text-align: center;
+                padding-left: 5%;
+            }
+
+            .card{
+                text-align: center;
+                border: 1px solid black;
+                width: 18rem; 
+                margin: 20px;
+            }
+
+            .column {
+                padding-left: 0px;
+                padding-right: 0px;
+            }
+
+            a,
+            a:hover {
+            color: inherit;
+            }
+        </style>
     </head>
     <body>
-        <div class="container" style="display: none">
+        <div class="container-fluid" style="display: none">
             <main class="main">
-                <h1 class="title">WebXR Layer Samples</h1>
-
-                <div class="grid">
-                    <a href="/simple-scene" class="card spring21">
-                        <h3>Simple VR</h3>
-                        <p>A simple VR scene</p>
-                    </a>
-
-                    <a href="/hand-input" class="card spring21">
-                        <h3>Hand Input</h3>
-                        <p>A simple example illustrating hands as controller</p>
-                    </a>
-
-                    <a href="/controller-interaction" class="card spring21">
-                        <h3>Controller Interaction</h3>
-                        <p>A simple VR scene showing controller interactions</p>
-                    </a>
-
-                    <a href="/simple-equirect-layer" class="card spring21">
-                        <h3>Simple Equirect Layer</h3>
-                        <p>A simple equirect layer displaying a stereo video</p>
-                    </a>
-
-                    <a href="/multiple-layers" class="card spring21">
-                        <h3>Multiple Layers</h3>
-                        <p>
-                            An equirect layer backdrop with a quad layer,
-                            displaying stereo video
-                        </p>
-                    </a>
-
-                    <a href="/webxrHandInput" class="card summer21">
-                        <h3>Hands in VR</h3>
-                        <p>
-                            A simple VR scene with Hands. 
-                        </p>
-                    </a>
-
-                    <a href="/handDrawing" class="card summer21">
-                        <h3>Draw in space</h3>
-                        <p>
-                            Draw in 3D space using both the left and right hand
-                        </p>
-                    </a>
-
-                    <a href="/handGrabbing" class="card summer21">
-                        <h3>Grab Sphere - Three.js </h3>
-                        <p>
-                            Three.js used to grab sphere using the pinch gesture
-                        </p>
-                    </a> 
-
-                    <a href="/handGrabbingDist" class="card summer21">
-                        <h3>Grab Sphere - WebXR Hand Input</h3>
-                        <p>
-                            Using the WebXR Hand Input API in order to draw/erase in 3D
-                        </p>
-                    </a>
-
-                    <a href="/resizeObject" class="card summer21">
-                        <h3>Resize an Object with Hands</h3>
-                        <p>
-                            Resize an Object using hand input with detection of double selection.
-                        </p>
-                    </a>
-
-                    <a href="/snapFingers" class="card summer21">
-                        <h3>Thanos</h3>
-                        <p>
-                            Destory half of the spheres by snapping.
-                        </p>
-                    </a>
-
-                    <a href="/ejectWeb" class="card summer21">
-                        <h3>SpiderMan</h3>
-                        <p>
-                            Detect 'Spider-man' pose and eject spider-saliva when detected
-                        </p>
-                    </a>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h1 class="title">WebXR Layer Samples</h1>
+                        <div class="row no-gutters">
+                            <div class="col-lg-6">
+                                <a href="/simple-scene">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Simple VR</h5>
+                                        <p class="card-text">A simple VR scene created using Three.js</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-lg-6">
+                                <a href="/hand-input">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Hand Input</h5>
+                                        <p class="card-text">A simple example illustrating hands as controller</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+    
+                        <div class="row no-gutters">
+                            <div class="col-lg-6">
+                                <a href="/controller-interaction">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Controller Interaction</h5>
+                                        <p class="card-text">A simple VR scene showing controller interactions</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-lg-6">
+                                <a href="/simple-equirect-layer">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Simple Equirect Layer</h5>
+                                        <p class="card-text">A simple equirect layer displaying a stereo video</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+    
+                        <div class="row no-gutters">
+                            <div class="col-lg-3"></div>
+                            <div class="col-lg-4">
+                                <a href="/multiple-layers">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Multiple Layers</h5>
+                                        <p class="card-text">An equirect layer backdrop with a quad layer, displaying stereo video</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="col-lg-6">
+                        <h1 class="title">WebXR Hand Interactions</h1>
+                        <div class="row no-gutters">
+                            <div class="col-lg-6">
+                                <a href="/webxrHandInput">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Hands in VR</h5>
+                                        <p class="card-text">A simple VR scene with Hands and Hand-Tracking</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-lg-6">
+                                <a href="/handDrawing">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Draw in space</h5>
+                                        <p class="card-text">Draw in 3D space using your hands via the 'Pinch' gesture</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+    
+                        <div class="row no-gutters">
+                            <div class="col-lg-6">
+                                <a href="/handGrabbing">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Grab Sphere</h5>
+                                        <p class="card-text">Pinch to grab and release a 3D sphere</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-lg-6">
+                                <a href="/handGrabbingDist">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Draw and Erase in a 3D</h5>
+                                        <p class="card-text">Use the pinch gesture to draw, and your finger-tips to erase</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+    
+                        <div class="row no-gutters">
+                            <div class="col-lg-6">
+                                <a href="/resizeObject">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Resize an Object with Hands</h5>
+                                        <p class="card-text">Resize an Object using the double-pinch selection gesture</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+    
+                            <div class="col-lg-6">
+                                <a href="/snapFingers">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">Thanos</h5>
+                                        <p class="card-text">Destory half the spheres in space by snapping</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+    
+                        <div class="row no-gutters">
+                            <div class="col-lg-3"></div>
+                            <div class="col-lg-4">
+                                <a href="/ejectWeb">
+                                    <div class="card">
+                                        <div class="card-body">
+                                        <h5 class="card-title">SpiderMan</h5>
+                                        <p class="card-text">Detect 'Spider-man' pose and eject spider-saliva when detected</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                    </div>
+    
+                   
                 </div>
             </main>
         </div>
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </body>
     <script type="module" src="/index.js"></script>
 </html>
