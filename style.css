@@ -6,6 +6,8 @@ body {
         Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
     overflow: scroll;
     overflow-x: hidden;
+    background-color: #ffffff;
+    background-image: linear-gradient(315deg, #ffffff 0%, #d7e1ec 74%);
 }
 
 ::-webkit-scrollbar {
@@ -21,13 +23,15 @@ body {
 
 .card{
     text-align: center;
-    border: 1px solid black;
+    border: 2px solid black;
     width: 18rem; 
-    margin: 20px;
+    margin-top: 20px;
+    margin-right: 0;
+    /* margin: 20px; */
 }
 
 .card:hover{
-    border: 3px solid gray;
+    border: 4px solid gray;
 }
 
 .column {
