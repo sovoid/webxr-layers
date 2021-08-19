@@ -46,6 +46,7 @@ let App = class App {
         this.leftHand;
         this.buildHands(0); // Right Hand
         this.buildHands(1); // Left Hand
+        this.plasmaBalls = []; //eject-plase-buffer
 
         //this.midAndThumbReady = false;
         //this.didSnap = false;
@@ -100,7 +101,10 @@ let App = class App {
                         let indexFingerMetaCarpal = theHand.joints['index-finger-metacarpal'];
                         let middleFingerMetaCarpal = theHand.joints['middle-finger-metacarpal'];
                         let ringFingerMetaCarpal = theHand.joints['ring-finger-metacarpal'];
-                        this.checkSpidermanPose(middleFingerTip, ringFingerTip, indexFingerMetaCarpal, middleFingerMetaCarpal, ringFingerMetaCarpal);
+                        let indexFinger = theHand.joints['index-finger-tip'];
+                        let pinkyFinger = theHand.joints['pinky-finger-tip'];
+                        //console.log("MFMC: " + JSON.stringify(middleFingerMetaCarpal, null, 4))
+                        this.checkSpidermanPose(middleFingerTip, ringFingerTip, indexFingerMetaCarpal, middleFingerMetaCarpal, ringFingerMetaCarpal, indexFinger, pinkyFinger);
                     } 
                     else if (name === 'left'){
                         theHand = this.leftHand;
@@ -109,7 +113,9 @@ let App = class App {
                         let indexFingerMetaCarpal = theHand.joints['index-finger-metacarpal']
                         let middleFingerMetaCarpal = theHand.joints['middle-finger-metacarpal']
                         let ringFingerMetaCarpal = theHand.joints['ring-finger-metacarpal']
-                        this.checkSpidermanPose(middleFingerTip, ringFingerTip, indexFingerMetaCarpal, middleFingerMetaCarpal, ringFingerMetaCarpal);
+                        let indexFinger = theHand.joints['index-finger-tip'];
+                        let pinkyFinger = theHand.joints['pinky-finger-tip'];
+                        this.checkSpidermanPose(middleFingerTip, ringFingerTip, indexFingerMetaCarpal, middleFingerMetaCarpal, ringFingerMetaCarpal, indexFinger, pinkyFinger);
 
                     }
                     else{
@@ -120,85 +126,58 @@ let App = class App {
         }
     }
 
-    checkSpidermanPose(middleFingerTip, ringFingerTip, indexFingerMetaCarpal, middleFingerMetaCarpal, ringFingerMetaCarpal){
+    checkSpidermanPose(middleFingerTip, ringFingerTip, indexFingerMetaCarpal, middleFingerMetaCarpal, ringFingerMetaCarpal, indexFinger, pinkyFinger){
         /*Calculate the distance between the tip of the middle finger and tip of the ring finger */
         let diffMidRingX = Math.abs(middleFingerTip.position.x - ringFingerTip.position.x)
         let diffMidRingY = Math.abs(middleFingerTip.position.y - ringFingerTip.position.y)
         let diffMidRingZ = Math.abs(middleFingerTip.position.z - ringFingerTip.position.z)
 
-        if(diffMidRingX == 0  && diffMidRingY == 0 && diffMidRingZ==0){
-            //fingers are touching, check distance of each finger from respective carpel
-            let diffMidCarpalX = Math.abs(middleFingerTip.position.x - middleFingerMetaCarpal.position.x)
-            let diffMidCarpalY = Math.abs(middleFingerTip.position.y - middleFingerMetaCarpal.position.y)
-            let diffMidCarpalZ = Math.abs(middleFingerTip.position.z - middleFingerMetaCarpal.position.z)
+        if(diffMidRingX!=0 || diffMidRingY || diffMidRingZ!=0 )
+        {
+            if(diffMidRingX <= 0.02  && diffMidRingY <= 0.02 && diffMidRingZ<=0.02){
+                //fingers are touching, check distance of each finger from respective carpel
+                //console.log("MF Car: " + middleFingerMetaCarpal.position.x +  " " + middleFingerMetaCarpal.position.y + " " + middleFingerMetaCarpal.position.z);
+                //console.log("RF Car: " + ringFingerMetaCarpal.position.x +  " " + ringFingerMetaCarpal.position.y + " " + ringFingerMetaCarpal.position.z);
+                let diffMidCarpalX = Math.abs(middleFingerTip.position.x - middleFingerMetaCarpal.position.x)
+                let diffMidCarpalY = Math.abs(middleFingerTip.position.y - middleFingerMetaCarpal.position.y)
+                let diffMidCarpalZ = Math.abs(middleFingerTip.position.z - middleFingerMetaCarpal.position.z)
 
-            let diffRingCarpalX = Math.abs(ringFingerTip.position.x - ringFingerMetaCarpal.position.x)
-            let diffRingCarpalY = Math.abs(ringFingerTip.position.x - ringFingerMetaCarpal.position.x)
-            let diffRingCarpalZ = Math.abs(ringFingerTip.position.x - ringFingerMetaCarpal.position.x)
+                let diffRingCarpalX = Math.abs(ringFingerTip.position.x - ringFingerMetaCarpal.position.x)
+                let diffRingCarpalY = Math.abs(ringFingerTip.position.x - ringFingerMetaCarpal.position.x)
+                let diffRingCarpalZ = Math.abs(ringFingerTip.position.x - ringFingerMetaCarpal.position.x)
 
-           // console.log("MiddFinger: " + diffMidCarpalX + diffMidCarpalY + diffMidCarpalZ);
-            //console.log("Ring Finger: " + diffRingCarpalX + diffRingCarpalY + diffRingCarpalZ);
-            if(diffRingCarpalX ==0 && diffRingCarpalY ==0 && diffRingCarpalZ==0){
-                if( diffMidCarpalX==0 && diffMidCarpalY ==0 && diffMidCarpalZ==0){
-                    console.log("Spidey Pose Detected");
-                    this.spiderManPoseActive = true;
+               // console.log("MiddFinger: " + diffMidCarpalX + diffMidCarpalY + diffMidCarpalZ);
+                //console.log("Ring Finger: " + diffRingCarpalX + diffRingCarpalY + diffRingCarpalZ);
+                if(diffRingCarpalX <=0.02 && diffRingCarpalY <=0.05 && diffRingCarpalZ<=0.02){
+                    if( diffMidCarpalX<=0.02 && diffMidCarpalY <=0.05 && diffMidCarpalZ<=0.02){
+                        console.log("Spidey Pose Detected");
+                        this.spiderManPoseActive = true;
+                        this.spidey(indexFinger, pinkyFinger);
+                    } else {
+                        this.spiderManPoseActive = false;
+                        // for (let i = 0; i < this.plasmaBalls; i++) {
+                        //     this.scene.remove(this.plasmaBalls[i]);
+                        //     this.plasmaBalls = this.spheres.filter(item => item !== this.spheres[i])
+                        // }
+                    }  
                 } else {
                     this.spiderManPoseActive = false;
-                } 
-            } else {
-                this.spiderManPoseActive = false;
-            }
-
-            if(this.spiderManPoseActive == true){
-                console.log("eject stuff now");
-            } else {
-                console.log("cannot eject anything")
-            }
-
-        }
-
-    }
-    checkSnap(middleTip, thumbTip, metaCarpal, hand) {
-        // Calculate the distance between positions of Middle Tip and Thumb Tip
-        let diffMidThumbX = Math.abs(middleTip.position.x - thumbTip.position.x)
-        let diffMidThumbY = Math.abs(middleTip.position.y - thumbTip.position.y)
-        let diffMidThumbZ = Math.abs(middleTip.position.z - thumbTip.position.z)
-
-        // Calculate the distance between positions of Middle Tip and Meta Carpal
-        let diffMidCarpalX = Math.abs(middleTip.position.x - metaCarpal.position.x)
-        let diffMidCarpalY = Math.abs(middleTip.position.y - metaCarpal.position.y)
-        let diffMidCarpalZ = Math.abs(middleTip.position.z - metaCarpal.position.z)
-
-        if (diffMidThumbX!=0 || diffMidThumbY!=0 || diffMidThumbZ!=0){
-            // When hands are not seen, the diffs initialize at zeroes. Stops once hands are seen.
-            if (diffMidThumbX < 0.02 && diffMidThumbY < 0.02 && diffMidThumbZ < 0.02) {
-                this.midAndThumbReady = true;
-                console.log('Mid Thumb Ready...')
-            }
-            // else{
-            //     this.midAndThumbReady = false;
-            // }
-        }
-
-        if (this.midAndThumbReady == true){
-            if (diffMidCarpalX < 0.05 && diffMidCarpalY < 0.05 && diffMidCarpalZ < 0.05) {
-                this.didSnap = this.didSnap != true ? true : false;
-                if (this.didSnap == true){
-                    console.log('Snapped...')
-                    this.thanos()
-                    this.midAndThumbReady = false
                 }
             }
         }
-    }
 
-    thanos(){
-        let spheresToDelete = Math.round(this.spheres.length / 2);
-        for (let i = 0; i < spheresToDelete; i++) {
-            console.log(i)
-            this.scene.remove(this.spheres[i]);
-            this.spheres = this.spheres.filter(item => item !== this.spheres[i])
-        }
+    }
+    
+
+    spidey(indexFinger, pinkyFinger){
+        console.log("inside spidey func");
+        const geometryR = new THREE.SphereBufferGeometry(0.01, 30, 30);
+        const materialR = new THREE.MeshStandardMaterial({color: 0x000000});
+        const plasmaBall = new THREE.Mesh(geometryR, materialR);
+        plasmaBall.position.set(indexFinger.position.x, indexFinger.position.y, indexFinger.position.z);// start position - the tip of the indexFinger
+        plasmaBall.quaternion.copy(this.camera.quaternion); // apply camera's quaternion
+        this.scene.add(plasmaBall);
+        this.plasmaBalls.push(plasmaBall); 
     }
 
     resize() {
@@ -210,6 +189,14 @@ let App = class App {
     render() {
         this.renderer.render(this.scene, this.camera);
         this.getHandVisibilityStatus();
+        if(this.plasmaBalls.length>0 && this.spiderManPoseActive == true){
+            console.log("ejecting");
+            this.plasmaBalls.forEach(b => {
+                console.log(b);
+                b.translateZ(-0.25); // move along the local z-axis
+            });
+
+        }   
     }
 
     createCamera() {

@@ -142,10 +142,10 @@ let App = class App {
                         this.leftHandSelection = true;
                     }
                 }
-                else{
-                    this.rightHandSelection = false;
-                    this.leftHandSelection = false;
-                }
+                // else{
+                //     this.rightHandSelection = false;
+                //     this.leftHandSelection = false;
+                // }
             }
             else{
                 this.rightHandSelection = false;
