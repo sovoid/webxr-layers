@@ -172,9 +172,9 @@ let App = class App {
     spidey(indexFinger, pinkyFinger){
         console.log("inside spidey func");
         const geometryR = new THREE.SphereBufferGeometry(0.01, 30, 30);
-        const materialR = new THREE.MeshStandardMaterial({color: 0x000000});
+        const materialR = new THREE.MeshStandardMaterial({color: 0x4e5354});
         const plasmaBall = new THREE.Mesh(geometryR, materialR);
-        plasmaBall.position.set(indexFinger.position.x, indexFinger.position.y, indexFinger.position.z);// start position - the tip of the indexFinger
+        plasmaBall.position.set(((indexFinger.position.x + pinkyFinger.position.x) / 2), indexFinger.position.y, indexFinger.position.z);// start position - the tip of the indexFinger
         plasmaBall.quaternion.copy(this.camera.quaternion); // apply camera's quaternion
         this.scene.add(plasmaBall);
         this.plasmaBalls.push(plasmaBall); 
@@ -193,9 +193,15 @@ let App = class App {
             console.log("ejecting");
             this.plasmaBalls.forEach(b => {
                 console.log(b);
-                b.translateZ(-0.25); // move along the local z-axis
+                b.translateZ(-0.05); // move along the local z-axis
             });
 
+        }
+        else{
+            this.plasmaBalls.forEach(b => {
+                this.scene.remove(b);
+            });
+            this.plasmaBalls = []
         }   
     }
 
