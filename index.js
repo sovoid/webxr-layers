@@ -6,6 +6,7 @@ import {
     MultipleLayers,
     SimpleHands,
     HandDrawing,
+    TouchObject,
     HandGrabbing,
     HandGrabbingDist,
     ResizeObject,
@@ -37,6 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         case "/handDrawing":
             app = new HandDrawing();
+            break;
+        case "/handTouching":
+            app = new TouchObject();
             break;
         case "/handGrabbing":
             app = new HandGrabbing();

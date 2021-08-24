@@ -7,8 +7,10 @@ export { default as MultipleLayers } from "./simple-video-layers/multiple-layers
 // WebXR Hand Inputs
 export { default as SimpleHands }  from "./webxr-hands/simple-hands";
 export { default as HandDrawing }  from "./webxr-hands/hand-pinch-drawing";
+export { default as TouchObject } from './webxr-hands/touch-object';
 export { default as HandGrabbing } from "./hand-grabbing-three";
 export { default as HandGrabbingDist } from "./hand-grabbing-dist";
 export { default as ResizeObject } from './webxr-hands/resize-object'; 
 export { default as SnapFingers } from './webxr-hands/snap-fingers'; 
 export { default as EjectWeb } from './webxr-hands/eject-web';
+
