@@ -4,6 +4,14 @@ import {
     SimpleScene,
     SimpleEquirectMediaLayer,
     MultipleLayers,
+    SimpleHands,
+    HandDrawing,
+    TouchObject,
+    HandGrabbing,
+    HandGrabbingDist,
+    ResizeObject,
+    SnapFingers,
+    EjectWeb
 } from "./apps";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -25,8 +33,32 @@ document.addEventListener("DOMContentLoaded", () => {
         case "/multiple-layers":
             app = new MultipleLayers();
             break;
+        case "/webxrHandInput":
+            app = new SimpleHands();
+            break;
+        case "/handDrawing":
+            app = new HandDrawing();
+            break;
+        case "/handTouching":
+            app = new TouchObject();
+            break;
+        case "/handGrabbing":
+            app = new HandGrabbing();
+            break;
+        case "/handGrabbingDist":
+            app = new HandGrabbingDist();
+            break;
+        case "/resizeObject":
+            app = new ResizeObject();
+            break;
+        case "/snapFingers":
+            app = new SnapFingers();
+            break;
+        case "/ejectWeb":
+            app = new EjectWeb();
+            break;
         default:
-            const indexContainer = document.querySelector(".container");
+            const indexContainer = document.querySelector(".container-fluid");
             indexContainer.style.display = "";
     }
 
